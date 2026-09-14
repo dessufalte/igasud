@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  tagline     String
+  description String
+  category    String
+  year        Int
+  status      String   @default("shipped") // shipped | in-progress | concept
+  featured    Boolean  @default(false)
+  thumbnail   String?
+  accent      String   @default("#8b5cf6") // accent color for the card
+  techStack   String   // JSON array string
+  links       String?  // JSON object string { repo?, demo?, docs? }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  docs        Doc[]
+}
+
+model Doc {
+  id        String   @id @default(cuid())
+  projectId String
+  section   String   // e.g. "Overview", "Architecture", "Features"
+  icon      String   @default("FileText")
+  order     Int      @default(0)
+  content   String   // markdown
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,195 @@
+# Portfolio Website - Worklog
+
+## Project Overview
+Build a minimalist Apple-inspired portfolio website with glassmorphism effects, fully responsive, using Next.js 16 + TypeScript. The site showcases the user's project documentations.
+
+## Task Plan
+- Task 1: Setup Prisma schema for projects & documentation + seed data
+- Task 2: Create API routes for projects and documentation
+- Task 3: Design glassmorphism design system in globals.css + layout
+- Task 4: Build portfolio frontend (Hero, About, Projects, Docs viewer, Skills, Contact, Footer)
+- Task 5: Lint + dev server + fix errors
+- Task 6: Self-verify with agent-browser
+- Task 7: Create scheduled cron job (webDevReview every 15 min)
+
+---
+Task ID: 0
+Agent: main
+Task: Initialize worklog and project planning
+
+Work Log:
+- Inspected existing Next.js 16 + TS scaffold (shadcn/ui, Prisma, Tailwind 4, framer-motion, next-themes available)
+- Read existing page.tsx (placeholder logo), layout.tsx, globals.css, prisma schema
+- Defined todo list and worklog
+
+Stage Summary:
+- Stack confirmed: Next.js 16, TS 5, Tailwind 4, shadcn/ui (New York), Prisma (SQLite), framer-motion, next-themes, lucide-react
+- Design direction: minimalist Apple aesthetic + glassmorphism (frosted glass cards, backdrop-blur, subtle gradients, SF-like typography via Geist/Inter)
+- Will build a single-route portfolio (`/`) showcasing projects + their documentation
+
+---
+Task ID: 1
+Agent: main
+Task: Setup Prisma schema for projects & documentation + seed data
+
+Work Log:
+- Rewrote prisma/schema.prisma with Project (slug, title, tagline, description, category, year, status, featured, accent, techStack JSON, links JSON) and Doc (projectId, section, icon, order, content markdown) models with cascade delete
+- Ran `bun run db:push` to sync schema
+- Wrote prisma/seed.ts with 6 rich sample projects (Aurora Design System, Lumen Analytics, Harbor CMS, Driftwood CLI, Prism Motion, Atlas Maps), each with 4 documentation sections (Overview, Architecture, Features, Roadmap) containing markdown with code blocks, tables, lists
+- Ran seed successfully: 6 projects + 24 doc sections inserted
+- Reduced Prisma log level from 'query' to ['warn','error'] to keep dev.log clean
+
+Stage Summary:
+- DB schema ready: Project + Doc models, SQLite
+- 6 seeded projects with full markdown documentation
+- Tech stack stored as JSON string, links as JSON object string, parsed in API layer
+
+---
+Task ID: 2
+Agent: main
+Task: Create API routes for projects and documentation
+
+Work Log:
+- Created src/lib/types.ts with TypeScript interfaces (ProjectSummary, ProjectDetail, ProjectDoc, ProjectLinks, ProjectStatus)
+- Created src/app/api/projects/route.ts (GET → list all projects with doc counts, JSON-parsed techStack/links)
+- Created src/app/api/projects/[slug]/route.ts (GET → single project + all docs ordered by `order`)
+- Installed remark-gfm for markdown table support
+- Both routes use force-dynamic and return proper error responses
+
+Stage Summary:
+- Two REST endpoints: GET /api/projects, GET /api/projects/[slug]
+- Tested live: both return 200 with expected JSON
+
+---
+Task ID: 3
+Agent: main
+Task: Design glassmorphism design system in globals.css + layout
+
+Work Log:
+- Rewrote src/app/globals.css with:
+  - Warm neutral light palette + deep dark palette (oklch color space)
+  - Glass utility classes: .glass, .glass-strong, .glass-hover, .glass-sheen (top highlight line)
+  - Ambient background blob classes with float animations
+  - Custom thin scrollbar styling
+  - Full prose-doc markdown styling (h1-h3, code, pre, tables, lists, blockquotes, hr, links)
+  - Text gradient utility (.text-gradient)
+  - fade-up + float-slow/slower keyframes
+- Rewrote src/app/layout.tsx:
+  - Swapped fonts to Inter (sans) + JetBrains Mono (mono)
+  - Added ThemeProvider (next-themes) with class strategy, defaultTheme light, enableSystem
+  - Switched Toaster to Sonner (works with `toast` from sonner)
+  - Updated metadata for portfolio
+- Created src/components/theme-provider.tsx
+
+Stage Summary:
+- Cohesive glassmorphism design system ready
+- Light + dark themes fully supported
+- Inter + JetBrains Mono fonts
+
+---
+Task ID: 4
+Agent: main
+Task: Build portfolio frontend (single / route)
+
+Work Log:
+- src/components/ambient-background.tsx — fixed full-screen ambient gradient blobs + subtle grain overlay
+- src/components/navbar.tsx — fixed glass nav with logo, desktop links, GitHub + theme toggle, mobile hamburger menu; gains shadow on scroll
+- src/components/project-card.tsx — glass card with status pill, year, accent glow, arrow that rotates on hover, tech stack chips, doc count footer; framer-motion entrance
+- src/components/project-doc-drawer.tsx — Sheet-based right drawer with: header (category/year/doc count, title, tagline, repo/demo buttons), desktop section sidebar nav, mobile section dropdown, markdown content area with react-markdown + remark-gfm + syntax-highlighted code blocks + loading skeletons
+- src/app/page.tsx — full single-page portfolio:
+  - Hero: status pill, gradient headline, description, CTAs, 4-stat row, decorative glows
+  - Featured: 3 featured project cards
+  - Work: category filter pills (All/Design Systems/Data/Developer Tools/Open Source) + responsive grid (1/2/3 cols)
+  - About: bio card + operating principles card (2-col on lg)
+  - Skills: 8 toolkit cards (2/3/4 cols)
+  - Contact: email/github buttons + social links + working contact form (simulated send with toast)
+  - Footer: sticky glass bar with logo + copyright + built-with note
+- All sections use scroll-mt-24 for anchor offset, framer-motion entrance animations, glass cards with sheen + hover lift
+
+Stage Summary:
+- Complete responsive portfolio with 6 sections + documentation drawer
+- Sticky footer confirmed (footer bottom = body height)
+- Theme toggle, filter, drawer, section switch, contact form all interactive
+
+---
+Task ID: 5
+Agent: main
+Task: Lint + dev server + fix errors
+
+Work Log:
+- `bun run lint` → clean, no errors
+- Dev server was already running on port 3000; confirmed via dev.log: GET / 200, GET /api/projects 200, GET /api/projects/[slug] 200
+- No hydration warnings, no runtime errors in dev.log
+
+Stage Summary:
+- Lint clean, dev server healthy, no errors
+
+---
+Task ID: 6
+Agent: main
+Task: Self-verify with agent-browser (desktop + mobile, sticky footer, interactivity)
+
+Work Log:
+- Opened http://localhost:3000, waited networkidle, checked errors (none)
+- Verified all sections render via interactive snapshot: nav, hero, featured (3), all projects (6) with filter pills, about (bio + principles), skills (8), contact form, footer
+- Clicked Aurora Design System card → drawer opened with 4 doc sections (Overview/Architecture/Features/Roadmap), markdown rendered (h1/h2 visible)
+- Switched to Architecture section → content updated to Architecture h1 + Tech stack h2 ✓
+- Closed drawer, clicked Developer Tools filter pill → grid correctly filtered to 2 projects (Harbor CMS, Driftwood CLI) ✓
+- Reset filter, toggled theme → html class changed to "dark" ✓
+- Emulated iPhone 14 (390x844): full page rendered, footer bottom (6343) = body height (6343) → sticky footer confirmed ✓
+- Opened mobile hamburger menu → Work/About/Skills/Contact links visible ✓
+- Tapped project card on mobile → drawer opened with mobile section dropdown (desktop aside hidden), content rendered ✓
+- Switched section via mobile dropdown → content updated to Architecture ✓
+- Filled contact form (name/email/message) + clicked Send → button changed to "Sent — thank you!" ✓
+- Checked dev.log: all 200 responses, zero errors/warnings
+
+Stage Summary:
+- ALL core interactions verified working on desktop AND mobile
+- Sticky footer confirmed on both viewports
+- Theme toggle, filtering, doc drawer, section switching, contact form all functional
+- No runtime errors or hydration issues
+
+---
+Task ID: 7
+Agent: main
+Task: Create scheduled cron job (webDevReview every 15 min)
+
+Work Log:
+- Creating cron job with kind=webDevReview, fixed_rate 900s (15 min), priority 5
+
+Stage Summary:
+- (pending creation below)
+
+Stage Summary:
+- Cron job created successfully: ID 383837, kind=webDevReview, fixed_rate=900s (every 15 min), tz=Asia/Jakarta, priority=5
+- Job will auto-assess project status, run agent-browser QA, and continue development (fix bugs or add features)
+
+---
+Task ID: FINAL
+Agent: main
+Task: Project handover summary
+
+## Current project status description/assessment
+The portfolio website is COMPLETE and fully functional. Built with Next.js 16 + TypeScript + Tailwind 4 + shadcn/ui, featuring a minimalist Apple-inspired aesthetic combined with glassmorphism (frosted glass cards, backdrop-blur, ambient gradient blobs, subtle grain). Fully responsive (verified on iPhone 14 + 1440px desktop). All 6 seeded projects display correctly with their full markdown documentation (Overview, Architecture, Features, Roadmap sections) accessible via a slide-out Sheet drawer with section navigation + syntax-highlighted code blocks + markdown tables.
+
+## Current goals / completed modifications / verification results
+- ✅ Prisma schema (Project + Doc) + 6 seeded projects with 24 doc sections
+- ✅ REST API: GET /api/projects, GET /api/projects/[slug]
+- ✅ Glassmorphism design system (light + dark themes via next-themes)
+- ✅ Single-page portfolio: glass navbar (sticky + scroll shadow + mobile menu), hero with stats, featured projects, filterable projects grid, about (bio + principles), skills grid, contact form with toast, sticky footer
+- ✅ Project documentation drawer with markdown rendering (react-markdown + remark-gfm + react-syntax-highlighter), desktop sidebar nav + mobile dropdown, loading skeletons
+- ✅ Lint clean, dev server healthy (all 200s, zero errors)
+- ✅ agent-browser verified: card click → drawer, section switch, category filter, theme toggle, mobile menu, mobile drawer, mobile section dropdown, contact form submit — ALL working on desktop + mobile
+- ✅ Sticky footer confirmed (footer bottom = body height on both viewports)
+- ✅ Scheduled cron job created (webDevReview every 15 min)
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. Recommended next-step enhancements for the recurring webDevReview cron:
+1. Add real backend persistence for contact form submissions (currently simulated) — new Prisma model + API route
+2. Add project search (text query over title/tagline/description/techStack)
+3. Add keyboard navigation (cmd+k command palette to jump to projects/sections)
+4. Add reading-progress indicator + table-of-contents within long doc sections
+5. Add project cover image generation via Image-Generation skill for visual richness
+6. Add "copy code" button on code blocks in docs
+7. Add favicon + OG image
+8. Consider adding a blog/writing section
