@@ -1345,3 +1345,115 @@ kbd {
   );
   transition: width 0.3s ease;
 }
+
+/* ---------- Admin filter chips ---------- */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: oklch(0.5 0.01 255 / 0.06);
+  color: oklch(0.5 0.01 255);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.dark .filter-chip {
+  background: oklch(1 0 0 / 0.06);
+  color: oklch(0.7 0.005 255);
+}
+.filter-chip[data-active="true"] {
+  background: var(--foreground);
+  color: var(--background);
+}
+.filter-chip:hover:not([data-active="true"]) {
+  background: oklch(0.5 0.01 255 / 0.12);
+  color: var(--foreground);
+}
+.dark .filter-chip:hover:not([data-active="true"]) {
+  background: oklch(1 0 0 / 0.12);
+}
+
+/* ---------- Admin action button ---------- */
+.admin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: oklch(0.5 0.01 255 / 0.06);
+  color: oklch(0.45 0.01 255);
+  transition: all 0.2s ease;
+}
+.dark .admin-action-btn {
+  background: oklch(1 0 0 / 0.06);
+  color: oklch(0.8 0.005 255);
+}
+.admin-action-btn:hover {
+  background: oklch(0.5 0.01 255 / 0.12);
+  color: var(--foreground);
+}
+.dark .admin-action-btn:hover {
+  background: oklch(1 0 0 / 0.12);
+}
+.admin-action-btn.danger:hover {
+  background: oklch(0.6 0.22 27 / 0.12);
+  color: oklch(0.6 0.22 27);
+}
+
+/* ---------- Bulk action bar ---------- */
+.bulk-bar {
+  animation: bulk-slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes bulk-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Checkbox styling ---------- */
+.admin-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.3rem;
+  border: 1.5px solid oklch(0.5 0.01 255 / 0.3);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.dark .admin-checkbox {
+  border-color: oklch(1 0 0 / 0.3);
+}
+.admin-checkbox:checked {
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.22 280),
+    oklch(0.6 0.2 200)
+  );
+  border-color: transparent;
+}
+.admin-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}

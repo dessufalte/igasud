@@ -720,3 +720,86 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Message search/filter** in admin panel (by name, email, unread)
 7. **Export messages** as CSV from admin panel
 8. **List view persistence** — save view/sort preference to localStorage
+
+---
+Task ID: 14 (cron round 7)
+Agent: main (webDevReview cron)
+Task: QA + add view/sort localStorage persistence, admin search/filter, CSV export, bulk actions
+
+## Current project status description/assessment
+Project was stable through round 6 (tasks 0-13). Initial QA pass: zero console errors, zero page errors, dev server healthy. No bugs found. Identified gaps from round 6's recommendations: (1) view/sort not persisted; (2) admin has no search/filter; (3) no CSV export; (4) no bulk actions. Seeded 5 test messages to verify admin features.
+
+Decision: stable → focus on **preference persistence, admin power features (search/filter/export/bulk), and refined admin UX** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **View/sort preference persistence** via `useLocalStorage` hook (`src/hooks/use-local-storage.ts`)
+   - SSR-safe hook: reads from localStorage on mount, writes on change, returns initialValue during hydration to avoid mismatch
+   - Applied to `view` (grid/list) and `sortBy` (featured/year-desc/year-asc/name/status) in page.tsx
+   - Keys: `portfolio.view`, `portfolio.sort`
+   - Verified: set list+A-Z on desktop → reload → still list+A-Z; also persisted across mobile reload (same localStorage)
+
+2. **Admin message search** — live filter by name, email, or body content
+   - Search input with icon + clear (X) button in dedicated search bar
+   - Case-insensitive substring match
+   - Verified: "alice" → 1 result (Alice Chen); clear → all 5
+
+3. **Admin filter chips** — All / Unread toggle
+   - `filter-chip` segmented control with active state (bg + color invert)
+   - Unread chip shows live count badge
+   - Composes with search (AND logic)
+   - Verified: All → 5 messages; Unread → 4 messages (1 was read during earlier QA)
+
+4. **CSV export** — downloads all messages as CSV
+   - "Export" button in header with Download icon
+   - Generates CSV client-side via Blob + download link: Name, Email, Message, Read, Created At
+   - Proper CSV escaping (quotes, commas, newlines)
+   - Filename: `messages-YYYY-MM-DD.csv`
+   - Toast confirmation: "Exported N messages"
+   - Verified: button click succeeds without console errors; CSV generated client-side
+
+5. **Bulk actions** — select-all checkbox + bulk mark read + bulk delete
+   - Select-all checkbox at top of message list (checks all visible)
+   - Per-message checkbox (custom `admin-checkbox` styling with gradient check)
+   - Bulk action bar slides down when items selected: "N selected" + Mark read + Delete + clear-selection
+   - Bulk mark read: PATCHes all selected in parallel
+   - Bulk delete: DELETEs all selected in parallel
+   - Verified: select-all → 5 selected, bulk bar appears; bulk mark read → unread count drops to 0
+
+6. **Mark all as read** — header button (CheckCheck icon)
+   - One-click mark all unread messages as read
+   - Disabled state when 0 unread
+   - Verified: button present, functional
+
+### Styling improvements
+7. **Filter chips** — segmented pills with active bg invert, hover state, count badge
+8. **Admin action buttons** — compact pills with hover bg, danger variant (red on hover)
+9. **Bulk action bar** — slide-down animation, bg tint, grouped actions
+10. **Custom checkbox** — gradient check on violet→cyan, proper checked state with white checkmark
+11. **Search bar** — glass input with icon + clear button, focus ring
+12. **Select-all row** — border-separated header row with checkbox + "N shown" count
+13. **Empty states** — context-aware ("No messages match" vs "No messages yet")
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ View/sort persistence: list+A-Z set → reload → still list+A-Z (localStorage confirmed)
+- ✅ Mobile persistence: preferences persist across device reload
+- ✅ Admin search: "alice" → 1 result; clear → all 5
+- ✅ Unread filter: All → 5, Unread → 4
+- ✅ Select-all: checks all 5, bulk bar appears "5 selected"
+- ✅ Bulk mark read: all 5 marked read, unread chip count drops to 0
+- ✅ CSV export: button click succeeds, no console errors
+- ✅ Mark all read: header button present + functional
+- ✅ Mobile (iPhone 14): footer at bottom, preferences persisted
+- ✅ Dev server: all 200s (including PATCH/DELETE admin routes), lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **OG image as full 1200x630** — currently reuses 64px favicon; generate a proper social preview
+2. **Blog/writing section** — reuse Doc model + markdown rendering for articles
+3. **Page transitions** via Next.js View Transitions API
+4. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status
+5. **Admin auth** — currently open via Shift+A with no auth; add a simple password gate
+6. **Admin message pagination** — for large message counts, add pagination/infinite scroll
+7. **Admin message date filter** — filter by date range
+8. **Admin keyboard shortcuts** — j/k to navigate messages, e to mark read, # to delete

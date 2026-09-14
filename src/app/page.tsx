@@ -39,6 +39,7 @@ import { ShortcutsHelp } from "@/components/shortcuts-help"
 import { CursorGlow } from "@/components/cursor-glow"
 import { TechMarquee } from "@/components/tech-marquee"
 import { AdminPanel } from "@/components/admin-panel"
+import { useLocalStorage } from "@/hooks/use-local-storage"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import type { ProjectSummary } from "@/lib/types"
@@ -83,8 +84,13 @@ export default function Home() {
   const [helpOpen, setHelpOpen] = React.useState(false)
   const [adminOpen, setAdminOpen] = React.useState(false)
   const [activeSection, setActiveSection] = React.useState<string>("")
-  const [view, setView] = React.useState<"grid" | "list">("grid")
-  const [sortBy, setSortBy] = React.useState<"featured" | "year-desc" | "year-asc" | "name" | "status">("featured")
+  const [view, setView] = useLocalStorage<"grid" | "list">(
+    "portfolio.view",
+    "grid"
+  )
+  const [sortBy, setSortBy] = useLocalStorage<
+    "featured" | "year-desc" | "year-asc" | "name" | "status"
+  >("portfolio.sort", "featured")
 
   React.useEffect(() => {
     fetch("/api/projects")
