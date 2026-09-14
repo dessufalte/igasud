@@ -29,6 +29,7 @@ import {
   List as ListIcon,
   PenLine,
   Clock,
+  Rss,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { AmbientBackground } from "@/components/ambient-background"
@@ -42,6 +43,7 @@ import { ShortcutsHelp } from "@/components/shortcuts-help"
 import { CursorGlow } from "@/components/cursor-glow"
 import { TechMarquee } from "@/components/tech-marquee"
 import { AdminPanel } from "@/components/admin-panel"
+import { AdminAuth } from "@/components/admin-auth"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
@@ -84,10 +86,17 @@ export default function Home() {
   const [activeSlug, setActiveSlug] = React.useState<string | null>(null)
   const [articles, setArticles] = React.useState<ArticleSummary[]>([])
   const [activeArticle, setActiveArticle] = React.useState<string | null>(null)
+  const [articleSearch, setArticleSearch] = React.useState("")
+  const [articleTag, setArticleTag] = React.useState<string>("All")
   const [search, setSearch] = React.useState("")
   const [cmdOpen, setCmdOpen] = React.useState(false)
   const [helpOpen, setHelpOpen] = React.useState(false)
   const [adminOpen, setAdminOpen] = React.useState(false)
+  const [adminAuthOpen, setAdminAuthOpen] = React.useState(false)
+  const [adminAuthed, setAdminAuthed] = useLocalStorage<boolean>(
+    "portfolio.adminAuthed",
+    false
+  )
   const [activeSection, setActiveSection] = React.useState<string>("")
   const [view, setView] = useLocalStorage<"grid" | "list">(
     "portfolio.view",
@@ -138,10 +147,14 @@ export default function Home() {
         setHelpOpen((v) => !v)
         return
       }
-      // `Shift+A` opens admin panel
+      // `Shift+A` opens admin panel (auth gate first if not authed)
       if (e.shiftKey && (e.key === "A" || e.key === "a") && !inField) {
         e.preventDefault()
-        setAdminOpen((v) => !v)
+        if (adminAuthed) {
+          setAdminOpen((v) => !v)
+        } else {
+          setAdminAuthOpen(true)
+        }
         return
       }
       // `Escape` closes the doc drawer if open (and no other dialog)
@@ -160,7 +173,7 @@ export default function Home() {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [cmdOpen, helpOpen, adminOpen, activeSlug])
+  }, [cmdOpen, helpOpen, adminOpen, adminAuthed, activeSlug])
 
   // Deep-linking: restore drawer from URL hash on mount + on popstate
   React.useEffect(() => {
@@ -168,14 +181,23 @@ export default function Home() {
       const hash = window.location.hash
       // Admin panel hash
       if (hash === "#/admin") {
-        setAdminOpen(true)
+        if (adminAuthed) {
+          setAdminOpen(true)
+        } else {
+          setAdminAuthOpen(true)
+        }
+        return
+      }
+      // Article drawer hash
+      const am = /^#\/article\/([^/]+)/.exec(hash)
+      if (am) {
+        setActiveArticle(decodeURIComponent(am[1]))
         return
       }
       // Project drawer hash
       const m = /^#\/project\/([^/]+)/.exec(hash)
       if (m) {
-        const slug = decodeURIComponent(m[1])
-        setActiveSlug(slug)
+        setActiveSlug(decodeURIComponent(m[1]))
       }
     }
     restore()
@@ -278,6 +300,26 @@ export default function Home() {
     [projects]
   )
 
+  // Article tags derived from data
+  const articleTags = React.useMemo(() => {
+    const set = new Set(articles.map((a) => a.tag))
+    return ["All", ...Array.from(set)]
+  }, [articles])
+
+  // Filtered articles (by search + tag)
+  const filteredArticles = React.useMemo(() => {
+    const q = articleSearch.trim().toLowerCase()
+    return articles.filter((a) => {
+      if (articleTag !== "All" && a.tag !== articleTag) return false
+      if (!q) return true
+      return (
+        a.title.toLowerCase().includes(q) ||
+        a.excerpt.toLowerCase().includes(q) ||
+        a.tag.toLowerCase().includes(q)
+      )
+    })
+  }, [articles, articleSearch, articleTag])
+
   // All slugs in display order (featured first, then by year) for prev/next nav
   const allSlugs = React.useMemo(
     () =>
@@ -316,6 +358,15 @@ export default function Home() {
       />
       <ShortcutsHelp open={helpOpen} onOpenChange={setHelpOpen} />
       <AdminPanel open={adminOpen} onOpenChange={setAdminOpen} />
+      <AdminAuth
+        open={adminAuthOpen}
+        onSuccess={() => {
+          setAdminAuthed(true)
+          setAdminAuthOpen(false)
+          setAdminOpen(true)
+        }}
+        onClose={() => setAdminAuthOpen(false)}
+      />
 
       <main className="flex-1 pt-24 sm:pt-28">
         {/* ============== HERO ============== */}
@@ -826,62 +877,140 @@ export default function Home() {
                 title="Notes on craft"
                 description="Essays and field notes on design systems, edge architecture, and shipping software. Tap any to read the full piece."
               />
-              <div className="grid gap-4 sm:gap-5 md:grid-cols-2 mt-8 sm:mt-10">
-                {articles.map((a, i) => (
-                  <motion.button
-                    key={a.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{
-                      duration: 0.5,
-                      delay: Math.min(i * 0.06, 0.3),
-                      ease: [0.16, 1, 0.3, 1],
-                    }}
-                    onClick={() => setActiveArticle(a.slug)}
-                    className="group relative text-left w-full overflow-hidden rounded-2xl glass glass-sheen glass-hover tilt-card p-5 sm:p-6 flex flex-col gap-3"
-                    aria-label={`Read article: ${a.title}`}
-                  >
-                    {/* Accent glow */}
-                    <div
-                      className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-60 z-0"
-                      style={{
-                        background:
-                          "radial-gradient(circle, oklch(0.6 0.25 290), transparent 70%)",
-                      }}
-                    />
-                    <div className="relative flex items-center gap-2 flex-wrap z-10">
-                      <span className="meta-chip">
-                        <PenLine className="h-3 w-3" />
-                        {a.tag}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {a.readingMins} min
-                      </span>
-                    </div>
-                    <h3 className="relative text-lg sm:text-xl font-semibold tracking-tight leading-tight z-10">
-                      {a.title}
-                    </h3>
-                    <p className="relative text-sm text-muted-foreground leading-relaxed line-clamp-3 z-10">
-                      {a.excerpt}
-                    </p>
-                    <div className="relative mt-auto pt-3 border-t border-foreground/5 flex items-center justify-between z-10">
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(a.publishedAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 group-hover:text-foreground transition-colors">
-                        Read
-                        <ArrowUpRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </motion.button>
-                ))}
+
+              {/* Search + tag filter + RSS */}
+              <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {articleTags.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setArticleTag(t)}
+                      data-active={articleTag === t}
+                      className="filter-chip"
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative sm:ml-auto sm:w-64">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    value={articleSearch}
+                    onChange={(e) => setArticleSearch(e.target.value)}
+                    placeholder="Search articles…"
+                    aria-label="Search articles"
+                    className="w-full h-9 pl-9 pr-9 rounded-full bg-foreground/4 border border-foreground/8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:bg-foreground/6 transition-all"
+                  />
+                  {articleSearch && (
+                    <button
+                      onClick={() => setArticleSearch("")}
+                      aria-label="Clear search"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 grid h-5 w-5 place-items-center rounded-full hover:bg-foreground/10 text-muted-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                <a
+                  href="/api/feed.xml"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="RSS feed"
+                  title="RSS feed"
+                  className="admin-action-btn shrink-0"
+                >
+                  <Rss className="h-3 w-3" />
+                  <span className="hidden sm:inline">RSS</span>
+                </a>
               </div>
+
+              {/* Result count */}
+              {!loading && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {filteredArticles.length}{" "}
+                  {filteredArticles.length === 1 ? "article" : "articles"}
+                  {articleTag !== "All" ? ` in ${articleTag}` : ""}
+                  {articleSearch ? ` matching “${articleSearch}”` : ""}
+                </p>
+              )}
+
+              {/* Article grid */}
+              {filteredArticles.length > 0 ? (
+                <div className="grid gap-4 sm:gap-5 md:grid-cols-2 mt-6">
+                  {filteredArticles.map((a, i) => (
+                    <motion.button
+                      key={a.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{
+                        duration: 0.5,
+                        delay: Math.min(i * 0.06, 0.3),
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      onClick={() => setActiveArticle(a.slug)}
+                      className="group relative text-left w-full overflow-hidden rounded-2xl glass glass-sheen glass-hover tilt-card p-5 sm:p-6 flex flex-col gap-3"
+                      aria-label={`Read article: ${a.title}`}
+                    >
+                      {/* Accent glow */}
+                      <div
+                        className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-60 z-0"
+                        style={{
+                          background:
+                            "radial-gradient(circle, oklch(0.6 0.25 290), transparent 70%)",
+                        }}
+                      />
+                      <div className="relative flex items-center gap-2 flex-wrap z-10">
+                        <span className="meta-chip">
+                          <PenLine className="h-3 w-3" />
+                          {a.tag}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {a.readingMins} min
+                        </span>
+                      </div>
+                      <h3 className="relative text-lg sm:text-xl font-semibold tracking-tight leading-tight z-10">
+                        {a.title}
+                      </h3>
+                      <p className="relative text-sm text-muted-foreground leading-relaxed line-clamp-3 z-10">
+                        {a.excerpt}
+                      </p>
+                      <div className="relative mt-auto pt-3 border-t border-foreground/5 flex items-center justify-between z-10">
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(a.publishedAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 group-hover:text-foreground transition-colors">
+                          Read
+                          <ArrowUpRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-foreground/5 text-muted-foreground">
+                    <SearchIcon className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    No articles match your filters.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setArticleSearch("")
+                      setArticleTag("All")
+                    }}
+                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-foreground/5 hover:bg-foreground/10 transition-colors"
+                  >
+                    Reset filters
+                  </button>
+                </div>
+              )}
             </div>
           </section>
         )}

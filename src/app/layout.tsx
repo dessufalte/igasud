@@ -42,6 +42,11 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.svg"],
     apple: [{ url: "/favicon.svg" }],
   },
+  alternates: {
+    types: {
+      "application/rss+xml": "/api/feed.xml",
+    },
+  },
   openGraph: {
     title: "Studio — Portfolio & Project Documentation",
     description:

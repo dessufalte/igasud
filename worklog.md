@@ -878,3 +878,80 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Article tags filter** — filter by tag (Essay/Writing/Note/Talk)
 7. **RSS feed** — generate an RSS feed for the writing section
 8. **Reading time tracking** — track total reading time across articles
+
+---
+Task ID: 16 (cron round 9)
+Agent: main (webDevReview cron)
+Task: QA + add article deep-linking, article search + tag filter, RSS feed, admin auth gate
+
+## Current project status description/assessment
+Project was stable through round 8 (tasks 0-15). Initial QA pass: zero console errors, zero page errors, dev server healthy. No bugs found. Identified gaps from round 8's recommendations: (1) no article deep-linking; (2) no article search/tag filter; (3) no RSS feed; (4) no admin auth.
+
+Decision: stable → focus on **article shareability (deep-linking + RSS), content browsing (search + tag filter), and security (admin auth gate)** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Article deep-linking** (URL hash `#/article/<slug>`)
+   - ArticleDrawer updates URL hash when an article opens
+   - Page restore effect reads `#/article/` hash on mount + popstate → opens article drawer
+   - Fixed race condition: ArticleDrawer was clearing the hash on mount (when slug=null) before the page's restore effect could read it. Fixed by tracking `prevSlugRef` — only clears hash when transitioning from open→closed, not on initial mount
+   - Verified: open article → hash `#/article/calm-interfaces`; reload with hash → drawer restores with "On building calm interfaces"
+
+2. **Article search + tag filter** in Writing section
+   - Search input with icon + clear (X) button — searches title, excerpt, tag
+   - Tag filter chips: All / Essay / Writing / Note (derived from article data)
+   - Result count text: "N articles in [tag] matching 'query'"
+   - Empty state with reset-filters button
+   - Composes with search (AND logic)
+   - Verified: "Essay" tag → 1 article; "design" search → 2 articles across all tags
+
+3. **RSS feed** (`/api/feed.xml`)
+   - New API route returning valid RSS 2.0 XML with Atom namespace
+   - Includes channel info (title, link, description, lastBuildDate) + 4 items (title, link, guid, description, category, pubDate)
+   - Proper XML escaping (& < > " ')
+   - Article links use `#/article/<slug>` deep-link format
+   - 1-hour revalidation cache
+   - RSS link button in Writing section + `<link rel="alternate" type="application/rss+xml">` in layout head
+   - Verified: curl returns valid XML with all 4 articles
+
+4. **Admin auth gate** (`src/components/admin-auth.tsx`)
+   - Password dialog appears when Shift+A is pressed and user isn't authenticated
+   - Demo password: `studio2024` (shown as hint in dialog)
+   - Wrong password → error message + clear input + re-focus
+   - Correct password → auth dialog closes, admin panel opens, auth state persisted to localStorage (`portfolio.adminAuthed`)
+   - On subsequent visits (reload), auth state is read from localStorage — no re-entry needed
+   - `#/admin` hash also triggers auth gate if not authed
+   - Verified: wrong password → "Incorrect password. Try again."; correct password → admin opens with 5 messages; reload after auth → Shift+A opens admin directly (authed)
+
+### Styling improvements
+5. **Article search bar** — glass input with icon + clear button, focus ring
+6. **Tag filter chips** — `filter-chip` segmented control with active state (bg invert)
+7. **RSS button** — `admin-action-btn` styling with RSS icon
+8. **Auth dialog** — glass dialog with Lock icon, password input, gradient Unlock button, demo hint, error state with destructive border
+9. **Result count** — live count with tag + search context
+
+### Bug fixed during this round
+- **Article deep-link race condition**: ArticleDrawer's effect ran on mount with `slug=null` and cleared the `#/article/` hash before the page's restore effect could read it. Fixed by adding `prevSlugRef` — only clears the hash when transitioning from a non-null slug to null (i.e., the drawer was open and is now closing), not on initial mount.
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Article deep-link: open article → hash `#/article/calm-interfaces`; reload with hash → drawer restores
+- ✅ Article search: "design" → 2 articles; clear → 4
+- ✅ Tag filter: "Essay" → 1 article with "1 article in Essay"
+- ✅ RSS feed: curl returns valid XML with 4 items, proper escaping
+- ✅ RSS link: present in Writing section + layout head
+- ✅ Admin auth: wrong password → error; correct password → admin opens; auth persists in localStorage across reload
+- ✅ Auth gate: clearing localStorage + reload → Shift+A shows auth dialog
+- ✅ Mobile (iPhone 14): article search, 4 tag chips, RSS link, 4 articles, footer at bottom
+- ✅ Dev server: all 200s (including /api/feed.xml, /api/articles), lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **Page transitions** via Next.js View Transitions API
+2. **Admin message pagination** — for large message counts, add pagination/infinite scroll
+3. **Admin message date filter** — filter by date range
+4. **Article TOC** — auto-generated table of contents for long articles (like project docs have)
+5. **Article reading time tracking** — track total reading time across articles
+6. **Sitemap.xml** — generate a sitemap for SEO
+7. **Article related projects** — link articles to related projects
+8. **Comments** — Disqus/Giscus integration for articles

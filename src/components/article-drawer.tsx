@@ -45,9 +45,19 @@ export function ArticleDrawer({
   const [readingPct, setReadingPct] = React.useState(0)
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
+  const prevSlugRef = React.useRef<string | null>(null)
+
   React.useEffect(() => {
+    const prevSlug = prevSlugRef.current
+    prevSlugRef.current = slug
+
     if (!slug) {
       setArticle(null)
+      // Only clear hash if we're transitioning from an open article to closed
+      // (not on initial mount — the page's restore effect handles that)
+      if (prevSlug && window.location.hash.startsWith("#/article/")) {
+        window.history.replaceState(null, "", window.location.pathname)
+      }
       return
     }
     setLoading(true)
@@ -57,6 +67,11 @@ export function ArticleDrawer({
       .then((data) => setArticle(data.article))
       .catch(() => setArticle(null))
       .finally(() => setLoading(false))
+    // Update URL hash for deep-linking
+    const newHash = `#/article/${slug}`
+    if (window.location.hash !== newHash) {
+      window.history.replaceState(null, "", newHash)
+    }
   }, [slug])
 
   React.useEffect(() => {
