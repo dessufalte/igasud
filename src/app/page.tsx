@@ -1126,6 +1126,8 @@ export default function Home() {
         onClose={() => setActiveArticle(null)}
         articles={articles}
         onNavigate={(slug) => setActiveArticle(slug)}
+        onOpenProject={(slug) => setActiveSlug(slug)}
+        relatedProjects={projects}
       />
     </div>
   )

@@ -34,6 +34,11 @@ export function ScrollUtilities() {
   const scrollTop = () =>
     window.scrollTo({ top: 0, behavior: "smooth" })
 
+  // SVG circle progress ring
+  const ringRadius = 22
+  const ringCircumference = 2 * Math.PI * ringRadius
+  const ringOffset = ringCircumference - (progress / 100) * ringCircumference
+
   return (
     <>
       {/* Page scroll progress bar */}
@@ -42,7 +47,7 @@ export function ScrollUtilities() {
         style={{ width: `${progress}%` }}
         aria-hidden="true"
       />
-      {/* Back-to-top FAB */}
+      {/* Back-to-top FAB with progress ring */}
       <AnimatePresence>
         {showFab && (
           <motion.button
@@ -54,7 +59,50 @@ export function ScrollUtilities() {
             aria-label="Back to top"
             className="fab-back-to-top glass glass-sheen glass-hover text-foreground shadow-lg"
           >
-            <ArrowUp className="h-4 w-4" />
+            {/* Progress ring (SVG) */}
+            <svg
+              className="absolute inset-0 -rotate-90"
+              width="100%"
+              height="100%"
+              viewBox="0 0 48 48"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="24"
+                cy="24"
+                r={ringRadius}
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-foreground/10"
+                fill="none"
+              />
+              <circle
+                cx="24"
+                cy="24"
+                r={ringRadius}
+                stroke="url(#fab-gradient)"
+                strokeWidth="2.5"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={ringCircumference}
+                strokeDashoffset={ringOffset}
+                style={{ transition: "stroke-dashoffset 0.15s linear" }}
+              />
+              <defs>
+                <linearGradient
+                  id="fab-gradient"
+                  x1="0"
+                  y1="0"
+                  x2="1"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="oklch(0.55 0.22 280)" />
+                  <stop offset="100%" stopColor="oklch(0.6 0.2 200)" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <ArrowUp className="relative h-4 w-4" />
           </motion.button>
         )}
       </AnimatePresence>

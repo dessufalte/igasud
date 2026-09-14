@@ -955,3 +955,73 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Sitemap.xml** — generate a sitemap for SEO
 7. **Article related projects** — link articles to related projects
 8. **Comments** — Disqus/Giscus integration for articles
+
+---
+Task ID: 17 (cron round 10)
+Agent: main (webDevReview cron)
+Task: QA + add sitemap.xml, article TOC, article related projects, FAB progress ring
+
+## Current project status description/assessment
+Project was stable through round 9 (tasks 0-16). Initial QA pass: zero console errors, zero page errors, dev server healthy. No bugs found. Identified gaps from round 9's recommendations: (1) no sitemap.xml; (2) no article TOC; (3) no article related projects; (4) FAB had no progress indicator.
+
+Decision: stable → focus on **SEO (sitemap), article reading UX (TOC + related projects), and visual polish (FAB progress ring)** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **sitemap.xml** for SEO
+   - New route at `/sitemap.xml` returning valid sitemap XML
+   - Includes: 6 static section URLs (#work, #about, #skills, #writing, #contact), 6 project deep-links (`/#/project/<slug>`), 4 article deep-links (`/#/article/<slug>`)
+   - Each URL has lastmod, changefreq, priority
+   - 1-hour revalidation cache
+   - Updated `robots.txt` to reference the sitemap (`Sitemap: https://studio.example/sitemap.xml`)
+   - Verified: `curl /sitemap.xml` returns 200 with valid XML containing all 16 URLs
+
+2. **Article TOC** (auto-generated table of contents)
+   - ArticleDrawer now parses h2/h3 headings from article body (skips code blocks + h1)
+   - Desktop sidebar with reading overview bar + "On this page" TOC links
+   - Active heading highlight on scroll (scroll-spy)
+   - Click a TOC item → smooth-scrolls to that heading
+   - Heading IDs injected via custom react-markdown h2/h3 renderers + ref collection
+   - Mobile: TOC sidebar hidden (`hidden sm:flex`), content full-width
+   - Verified: 4 TOC items ("What calm means", "Earning attention", "The cost of surprise", "Practice"); first active at top; scroll updates to "Earning attention"; reading overview fills to 32.4%
+
+3. **Article related projects**
+   - ArticleDrawer accepts `relatedProjects` + `onOpenProject` props
+   - Page passes all projects; article shows up to 4 as accent-colored pills at the bottom
+   - Clicking a pill closes the article drawer and opens that project's documentation drawer
+   - Verified: 4 pills (Lumen, Aurora, Harbor, Prism); clicking Lumen → project drawer opens with hash `#/project/lumen-analytics/overview`
+
+4. **Back-to-top FAB progress ring**
+   - SVG circle progress ring around the FAB arrow
+   - Gradient stroke (violet→cyan) with dynamic stroke-dashoffset based on scroll progress
+   - Track circle (foreground/10) + progress circle (gradient)
+   - Smooth 0.15s linear transition
+   - Verified: offset 89 at mid-scroll, 0 at bottom (100% complete); ring circumference 138.23
+
+### Styling improvements
+5. **Article TOC sidebar** — reuses project drawer design (reading overview bar, toc-link styling with active border-left + gradient bg)
+6. **Related project pills** — accent dot + title + arrow, hover lift
+7. **FAB progress ring** — gradient SVG circle with track + progress, animated offset
+8. **Sitemap route** — clean XML with proper namespace + escaping
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Sitemap: `curl /sitemap.xml` → 200, valid XML, 16 URLs (6 static + 6 projects + 4 articles)
+- ✅ Robots.txt: references sitemap
+- ✅ Article TOC: 4 items, first active at top, scroll updates active heading + reading overview bar fills
+- ✅ TOC click: smooth-scrolls to heading
+- ✅ Related projects: 4 pills with accent dots, clicking opens project drawer + updates hash
+- ✅ FAB progress ring: SVG circle with dynamic offset (89 at mid → 0 at bottom)
+- ✅ Mobile (iPhone 14): TOC sidebar hidden, 4 related projects, footer at bottom
+- ✅ Dev server: all 200s (including /sitemap.xml), lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **Page transitions** via Next.js View Transitions API
+2. **Admin message pagination** — for large message counts, add pagination/infinite scroll
+3. **Admin message date filter** — filter by date range
+4. **Article reading time tracking** — track total reading time across articles
+5. **Comments** — Disqus/Giscus integration for articles
+6. **Article cover images** — generate cover images for articles (like projects have)
+7. **Print-specific styles per article** — article print stylesheet
+8. **Analytics** — privacy-friendly page view tracking
