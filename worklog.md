@@ -281,3 +281,96 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Deep-linking** — URL hash for open project + active section (e.g. #/project/aurora/architecture) so docs are shareable
 7. **Blog/writing section** — reuse the Doc model + markdown rendering
 8. **Page transitions** with Next.js View Transitions API for route-level polish
+
+---
+Task ID: 9 (cron round 2)
+Agent: main (webDevReview cron)
+Task: QA + add TOC, deep-linking, scroll-spy, keyboard help, animated counters, magnetic CTAs, favicon, quote card, gradient reveal
+
+## Current project status description/assessment
+Project was stable from round 1 (tasks 0-8): minimalist Apple-style portfolio with glassmorphism, 6 seeded projects, documentation drawer with copy-code + reading progress + section nav, Cmd+K palette, project search, contact form backend, scroll progress + back-to-top FAB, theme toggle. Initial QA pass: zero console errors, zero page errors, 1 h1, 5 h2, favicon MISSING, no TOC in drawer, no URL hash for shareable docs, no scroll-spy.
+
+Decision: stable → focus on **documentation UX (TOC + deep-linking), navigation polish (scroll-spy, shortcuts help), and richer micro-interactions** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Auto-generated Table of Contents** in doc drawer
+   - Parses h2/h3 headings from active section's markdown, skips code blocks + h1
+   - Rendered in left sidebar below section list, with active-link highlight on scroll
+   - Click any TOC item → smooth-scrolls the content container to that heading
+   - Slugified heading IDs injected via custom react-markdown `h2`/`h3` renderers + ref collection
+   - Verified: Aurora Overview → 2 TOC items ("Why this exists", "Highlights"); Architecture → "Tech stack"
+
+2. **Deep-linking (shareable doc URLs)**
+   - URL hash format: `#/project/<slug>/<section-slug>` (e.g. `#/project/aurora-design-system/architecture`)
+   - On drawer open: replaces URL state with current project+section
+   - On mount + popstate: restores drawer from hash (deep-link restoration)
+   - Verified: reload with hash → drawer reopens at correct section ("Architecture" h1 confirmed); hash clears on close
+
+3. **Scroll-spy navbar** (active section highlight)
+   - Scroll-based observer (rAF-throttled) tracking #top/#work/#about/#skills/#contact
+   - Active link gets `data-active=true` + violet dot indicator + bolder text
+   - Initially tried IntersectionObserver (unreliable for tall sections); rewrote to scroll+getBoundingClientRect
+   - Verified: scroll to Work → "Work" highlighted; scroll to About → "About" highlighted
+
+4. **Keyboard shortcuts help overlay** (`?` key)
+   - New `src/components/shortcuts-help.tsx` — glass Dialog with grouped shortcuts (Navigation, Command palette, Documentation drawer)
+   - Triggered by `?` (Shift+/) anywhere, also via navbar keyboard icon button
+   - Verified: `?` dispatches → dialog opens with all shortcut items visible
+
+5. **Animated stat counters** (count-up)
+   - STATS now numeric (6, 4, 30, Infinity) with suffix ("+", "", "k+", "")
+   - `CountUp` component: IntersectionObserver triggers rAF animation 0 → target with cubic ease-out, 1.4s
+   - Infinity rendered as "∞" symbol, no animation
+   - `stat-value` class with `font-variant-numeric: tabular-nums` for stable width
+   - Verified: hero stats animate "0+" → "6+", "4", "30k+", "∞" when scrolled into view
+
+6. **Magnetic CTA buttons**
+   - `MagneticButton` component: rAF-throttled mousemove translates button toward cursor (0.25 pull factor)
+   - Resets to (0,0) on mouse leave
+   - Applied to hero "Explore the work" + "Get in touch" buttons
+   - Verified: mouse move → translate(-8.95px, -0.73px); mouse away → translate(0px, 0px)
+
+7. **Favicon + richer metadata**
+   - New `public/favicon.svg` — gradient violet→cyan rounded square with "S" + accent dot
+   - Updated `layout.tsx` metadata: title template, icons (icon/shortcut/apple all pointing to favicon.svg), OG image, twitter card, robots, keywords
+   - Verified: `<link rel="icon" href="/favicon.svg">` present in DOM
+
+### Styling improvements
+8. **Gradient reveal headline** — hero "considered software." now animates with `gradient-reveal` (background-position sweep + opacity fade-in, 1.4s)
+9. **Glow dot** on hero availability indicator — `glow-pulse` keyframe adds expanding emerald ring
+10. **Testimonial/quote card** in About section — `quote-card` with large opening-quote pseudo-element, blockquote with gradient highlight word, figcaption with avatar
+11. **Skill card shimmer** — `skill-card-shimmer` adds diagonal light sweep on hover (0.9s ease)
+12. **TOC link styling** — left-border violet active indicator + gradient background highlight for active heading
+13. **Nav scroll-spy dot** — violet 4px dot under active nav link
+14. **Share link button** in doc drawer meta — copies current deep-link URL to clipboard with "Linked" feedback
+
+### Bug fixed during this round
+- **Lucide `Map` icon import collision**: importing `Map` from lucide-react shadowed the global `Map` constructor → `new Map()` threw "Map is not a constructor" (500 error). Fixed by aliasing: `import { Map as MapIcon }` and using `Map: MapIcon` in the ICONS map.
+- **Scroll-spy IntersectionObserver unreliable**: tall sections never crossed 0.25 threshold in the 15% viewport band → no nav link activated. Rewrote to scroll+getBoundingClientRect with a 35% trigger line.
+- **Broken share button**: initial version read `document.getElementById().dataset.shared` during render (wouldn't update). Refactored to a proper `ShareLinkButton` React component with `useState`.
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Favicon present in DOM (`/favicon.svg`)
+- ✅ TOC renders in drawer (Aurora Overview → 2 items, Architecture → 1 item)
+- ✅ Deep-link: `#/project/aurora-design-system/architecture` → reload reopens drawer at Architecture (h1="Architecture")
+- ✅ Scroll-spy: Work → "Work" highlighted; About → "About" highlighted (active data-attr + violet dot)
+- ✅ `?` shortcut → help dialog opens with 3 groups (Navigation/palette/drawer) + all items visible
+- ✅ Count-up: hero stats animate 0→target on scroll ("6+", "4", "30k+", "∞")
+- ✅ Magnetic button: mousemove → translate(-8.95px, -0.73px); mouseleave → translate(0px, 0px)
+- ✅ Gradient reveal headline animates on load
+- ✅ Quote card present in About section
+- ✅ Mobile (iPhone 14): all features present, footer at bottom confirmed
+- ✅ Dev server: all 200s, no errors, lint clean
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **Hero parallax** — move ambient blobs at different rate than scroll (currently `.parallax-layer` class exists but unused)
+2. **Project cover images** — generate via Image-Generation skill, store `thumbnail` field (schema already supports it)
+3. **Admin view for messages** — list/read/delete saved contact messages
+4. **Blog/writing section** — reuse Doc model + markdown rendering for articles
+5. **Page transitions** via Next.js View Transitions API
+6. **Search keyboard nav** in Work section search input (Enter to open first result in drawer)
+7. **TOC active-heading spy** needs scroll trigger to mark first heading active at section top (currently needs scroll past 80px threshold)
+8. **OG image** as full 1200x630 image (currently reuses 64px favicon)

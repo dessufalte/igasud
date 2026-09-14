@@ -3,20 +3,24 @@
 import * as React from "react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
-import { Moon, Sun, Github, Menu, X, Command } from "lucide-react"
+import { Moon, Sun, Github, Menu, X, Command, Keyboard } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
-  { label: "Work", href: "#work" },
-  { label: "About", href: "#about" },
-  { label: "Skills", href: "#skills" },
-  { label: "Contact", href: "#contact" },
+  { label: "Work", href: "#work", id: "work" },
+  { label: "About", href: "#about", id: "about" },
+  { label: "Skills", href: "#skills", id: "skills" },
+  { label: "Contact", href: "#contact", id: "contact" },
 ]
 
 export function Navbar({
   onOpenCommand,
+  activeSection,
+  onOpenHelp,
 }: {
   onOpenCommand: () => void
+  activeSection: string
+  onOpenHelp: () => void
 }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
@@ -68,7 +72,13 @@ export function Navbar({
               <Link
                 key={l.href}
                 href={l.href}
-                className="px-3.5 py-1.5 rounded-full text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                data-active={activeSection === l.id}
+                className={cn(
+                  "nav-link-spy px-3.5 py-1.5 rounded-full text-sm transition-colors",
+                  activeSection === l.id
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                )}
               >
                 {l.label}
               </Link>
@@ -86,6 +96,15 @@ export function Navbar({
               <Search />
               <span className="hidden lg:inline">Search</span>
               <kbd className="ml-1">⌘K</kbd>
+            </button>
+            {/* Shortcuts help trigger */}
+            <button
+              onClick={onOpenHelp}
+              className="hidden sm:grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+            >
+              <Keyboard className="h-4 w-4" />
             </button>
             <button
               onClick={onOpenCommand}

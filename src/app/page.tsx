@@ -23,6 +23,8 @@ import {
   Search as SearchIcon,
   X,
   Check,
+  Keyboard,
+  Quote,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { AmbientBackground } from "@/components/ambient-background"
@@ -30,6 +32,7 @@ import { ProjectCard } from "@/components/project-card"
 import { ProjectDocDrawer } from "@/components/project-doc-drawer"
 import { CommandPalette } from "@/components/command-palette"
 import { ScrollUtilities } from "@/components/scroll-utilities"
+import { ShortcutsHelp } from "@/components/shortcuts-help"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import type { ProjectSummary } from "@/lib/types"
@@ -55,11 +58,13 @@ const SKILLS = [
 ]
 
 const STATS = [
-  { value: "6+", label: "Projects shipped" },
-  { value: "4", label: "Years building" },
-  { value: "30k+", label: "Lines of clean code" },
-  { value: "∞", label: "Curiosity" },
+  { value: 6, suffix: "+", label: "Projects shipped" },
+  { value: 4, suffix: "", label: "Years building" },
+  { value: 30, suffix: "k+", label: "Lines of clean code" },
+  { value: Infinity, suffix: "", label: "Curiosity" },
 ]
+
+const SECTION_IDS = ["work", "about", "skills", "contact"] as const
 
 export default function Home() {
   const [projects, setProjects] = React.useState<ProjectSummary[]>([])
@@ -69,6 +74,8 @@ export default function Home() {
   const [activeSlug, setActiveSlug] = React.useState<string | null>(null)
   const [search, setSearch] = React.useState("")
   const [cmdOpen, setCmdOpen] = React.useState(false)
+  const [helpOpen, setHelpOpen] = React.useState(false)
+  const [activeSection, setActiveSection] = React.useState<string>("")
 
   React.useEffect(() => {
     fetch("/api/projects")
@@ -78,25 +85,105 @@ export default function Home() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Global Cmd+K / Ctrl+K shortcut
+  // Global keyboard shortcuts
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Cmd+K / Ctrl+K toggles command palette
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault()
         setCmdOpen((v) => !v)
+        return
       }
-      if (e.key === "/" && !cmdOpen) {
-        const t = e.target as HTMLElement
-        const tag = t.tagName
-        if (tag !== "INPUT" && tag !== "TEXTAREA" && !t.isContentEditable) {
-          e.preventDefault()
-          setCmdOpen(true)
+      const t = e.target as HTMLElement
+      const tag = t.tagName
+      const inField =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        t.isContentEditable
+      // `/` opens command palette
+      if (e.key === "/" && !inField && !cmdOpen) {
+        e.preventDefault()
+        setCmdOpen(true)
+        return
+      }
+      // `?` opens shortcuts help (Shift+/)
+      if (e.key === "?" && !inField) {
+        e.preventDefault()
+        setHelpOpen((v) => !v)
+        return
+      }
+      // `Escape` closes the doc drawer if open (and no other dialog)
+      if (
+        e.key === "Escape" &&
+        activeSlug &&
+        !cmdOpen &&
+        !helpOpen
+      ) {
+        // Sheet handles Escape internally; we just clear the hash
+        const hash = window.location.hash
+        if (hash.startsWith("#/project/")) {
+          window.history.replaceState(null, "", window.location.pathname)
         }
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [cmdOpen])
+  }, [cmdOpen, helpOpen, activeSlug])
+
+  // Deep-linking: restore drawer from URL hash on mount + on popstate
+  React.useEffect(() => {
+    const restore = () => {
+      const hash = window.location.hash
+      const m = /^#\/project\/([^/]+)/.exec(hash)
+      if (m) {
+        const slug = decodeURIComponent(m[1])
+        setActiveSlug(slug)
+      }
+    }
+    restore()
+    window.addEventListener("popstate", restore)
+    return () => window.removeEventListener("popstate", restore)
+  }, [])
+
+  // Scroll-spy: highlight active nav section (scroll-based, reliable)
+  React.useEffect(() => {
+    const ids = ["top", ...SECTION_IDS]
+    let raf = 0
+    const compute = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const mid = window.innerHeight * 0.35
+        let best = ""
+        let bestDist = Infinity
+        for (const id of ids) {
+          const el = document.getElementById(id)
+          if (!el) continue
+          const rect = el.getBoundingClientRect()
+          // distance from section top to the trigger line (35% from viewport top)
+          const dist = Math.abs(rect.top - mid)
+          // prefer the section whose top is at or just above the line
+          if (rect.top <= mid + 10 && dist < bestDist) {
+            bestDist = dist
+            best = id
+          }
+        }
+        if (!best) {
+          // above all sections → top
+          const top = document.getElementById("top")
+          if (top && top.getBoundingClientRect().bottom > 0) best = "top"
+        }
+        if (best) setActiveSection(best)
+      })
+    }
+    compute()
+    window.addEventListener("scroll", compute, { passive: true })
+    window.addEventListener("resize", compute)
+    return () => {
+      window.removeEventListener("scroll", compute)
+      window.removeEventListener("resize", compute)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -124,13 +211,18 @@ export default function Home() {
     <div id="top" className="relative min-h-screen flex flex-col">
       <AmbientBackground />
       <ScrollUtilities />
-      <Navbar onOpenCommand={() => setCmdOpen(true)} />
+      <Navbar
+        onOpenCommand={() => setCmdOpen(true)}
+        activeSection={activeSection}
+        onOpenHelp={() => setHelpOpen(true)}
+      />
       <CommandPalette
         open={cmdOpen}
         onOpenChange={setCmdOpen}
         projects={projects}
         onOpenProject={(slug) => setActiveSlug(slug)}
       />
+      <ShortcutsHelp open={helpOpen} onOpenChange={setHelpOpen} />
 
       <main className="flex-1 pt-24 sm:pt-28">
         {/* ============== HERO ============== */}
@@ -162,7 +254,7 @@ export default function Home() {
                 <span className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full text-xs font-medium bg-foreground/5 border border-foreground/8 text-muted-foreground">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 glow-dot" />
                   </span>
                   Available for select projects
                 </span>
@@ -170,7 +262,9 @@ export default function Home() {
                 <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
                   Building calm,
                   <br />
-                  <span className="text-gradient">considered software.</span>
+                  <span className="text-gradient gradient-reveal">
+                    considered software.
+                  </span>
                 </h1>
 
                 <p className="max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
@@ -181,9 +275,9 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <a
+                  <MagneticButton
                     href="#work"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-white shadow-lg shadow-foreground/10 transition-transform hover:scale-[1.02]"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-white shadow-lg shadow-foreground/10"
                     style={{
                       background:
                         "linear-gradient(135deg, oklch(0.5 0.22 280), oklch(0.55 0.2 200))",
@@ -191,22 +285,25 @@ export default function Home() {
                   >
                     Explore the work
                     <ArrowDown className="h-4 w-4" />
-                  </a>
-                  <a
+                  </MagneticButton>
+                  <MagneticButton
                     href="#contact"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium bg-foreground/5 border border-foreground/8 hover:bg-foreground/8 transition-colors"
                   >
                     Get in touch
                     <ArrowUpRight className="h-4 w-4" />
-                  </a>
+                  </MagneticButton>
                 </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 mt-2 border-t border-foreground/8">
                   {STATS.map((s) => (
                     <div key={s.label} className="flex flex-col">
-                      <span className="text-2xl sm:text-3xl font-bold tracking-tight">
-                        {s.value}
+                      <span className="stat-value text-2xl sm:text-3xl font-bold tracking-tight">
+                        <CountUp
+                          value={s.value}
+                          suffix={s.suffix}
+                        />
                       </span>
                       <span className="text-xs text-muted-foreground mt-1">
                         {s.label}
@@ -437,6 +534,39 @@ export default function Home() {
                 </ul>
               </motion.div>
             </div>
+
+            {/* Testimonial / quote card */}
+            <motion.figure
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              className="quote-card mt-5 rounded-3xl glass glass-sheen p-6 sm:p-8 lg:p-10 relative overflow-hidden"
+            >
+              <Quote className="absolute top-4 right-4 h-8 w-8 text-foreground/8" />
+              <blockquote className="relative text-lg sm:text-xl lg:text-2xl font-medium tracking-tight leading-snug max-w-3xl">
+                The best engineers I&apos;ve worked with treat the interface
+                like a <span className="text-gradient">conversation</span> — every
+                pixel earning its place, every interaction keeping a promise.
+              </blockquote>
+              <figcaption className="relative mt-6 flex items-center gap-3">
+                <span
+                  className="grid h-10 w-10 place-items-center rounded-full text-white text-sm font-bold"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, oklch(0.55 0.22 280), oklch(0.6 0.2 200))",
+                  }}
+                >
+                  M
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">Maya R.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Staff Engineer, Fintech
+                  </p>
+                </div>
+              </figcaption>
+            </motion.figure>
           </div>
         </section>
 
@@ -465,7 +595,7 @@ export default function Home() {
                     delay: i * 0.05,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  className="rounded-2xl glass glass-sheen glass-hover p-4 sm:p-5 flex items-center gap-3"
+                  className="rounded-2xl glass glass-sheen glass-hover skill-card-shimmer p-4 sm:p-5 flex items-center gap-3"
                 >
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-foreground/5">
                     <s.icon className="h-4.5 w-4.5" />
@@ -752,5 +882,112 @@ function ContactForm() {
         Saved to my inbox. I typically reply within 1–2 business days.
       </p>
     </form>
+  )
+}
+
+/* ---------- Magnetic CTA button ----------
+   Subtly translates toward the cursor on hover for a tactile feel. */
+function MagneticButton({
+  href,
+  children,
+  className,
+  style,
+}: {
+  href: string
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const ref = React.useRef<HTMLAnchorElement>(null)
+  const raf = React.useRef<number>(0)
+
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current
+    if (!el) return
+    cancelAnimationFrame(raf.current)
+    raf.current = requestAnimationFrame(() => {
+      const rect = el.getBoundingClientRect()
+      const x = e.clientX - (rect.left + rect.width / 2)
+      const y = e.clientY - (rect.top + rect.height / 2)
+      const pull = 0.25
+      el.style.transform = `translate(${x * pull}px, ${y * pull}px)`
+    })
+  }
+  const onLeave = () => {
+    const el = ref.current
+    if (!el) return
+    cancelAnimationFrame(raf.current)
+    el.style.transform = "translate(0, 0)"
+  }
+
+  return (
+    <a
+      ref={ref}
+      href={href}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      className={cn("magnetic-btn transition-transform", className)}
+      style={style}
+    >
+      {children}
+    </a>
+  )
+}
+
+/* ---------- CountUp stat ----------
+   Animates a number from 0 to target when scrolled into view.
+   Handles Infinity as a special case (renders ∞). */
+function CountUp({
+  value,
+  suffix = "",
+  duration = 1400,
+}: {
+  value: number
+  suffix?: string
+  duration?: number
+}) {
+  const [display, setDisplay] = React.useState(value === Infinity ? "∞" : "0")
+  const ref = React.useRef<HTMLSpanElement>(null)
+  const started = React.useRef(false)
+
+  React.useEffect(() => {
+    if (value === Infinity) {
+      setDisplay("∞")
+      return
+    }
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setDisplay(String(value))
+      return
+    }
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !started.current) {
+            started.current = true
+            const start = performance.now()
+            const tick = (now: number) => {
+              const t = Math.min(1, (now - start) / duration)
+              const eased = 1 - Math.pow(1 - t, 3)
+              const current = Math.round(value * eased)
+              setDisplay(String(current))
+              if (t < 1) requestAnimationFrame(tick)
+            }
+            requestAnimationFrame(tick)
+            obs.disconnect()
+          }
+        }
+      },
+      { threshold: 0.4 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [value, duration])
+
+  return (
+    <span ref={ref} suppressHydrationWarning>
+      {display}
+      {value !== Infinity && suffix}
+    </span>
   )
 }

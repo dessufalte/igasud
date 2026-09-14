@@ -17,7 +17,7 @@ import {
   Sparkles,
   Layers,
   ListChecks,
-  Map,
+  Map as MapIcon,
   FileText,
   Code2,
   Rocket,
@@ -31,6 +31,7 @@ import {
   Check,
   Copy,
   Clock,
+  List,
   type LucideIcon,
 } from "lucide-react"
 import type { ProjectDetail, ProjectDoc } from "@/lib/types"
@@ -40,7 +41,7 @@ const ICONS: Record<string, LucideIcon> = {
   Sparkles,
   Layers,
   ListChecks,
-  Map,
+  Map: MapIcon,
   FileText,
   Code2,
   Rocket,
@@ -59,7 +60,41 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
   const [loading, setLoading] = React.useState(false)
   const [activeDoc, setActiveDoc] = React.useState<string | null>(null)
   const [readingPct, setReadingPct] = React.useState(0)
+  const [activeHeading, setActiveHeading] = React.useState<string | null>(null)
   const scrollRef = React.useRef<HTMLDivElement>(null)
+  const headingRefs = React.useRef<Map<string, HTMLHeadingElement>>(new Map())
+
+  const activeDocObj = project?.docs.find((d) => d.id === activeDoc) ?? null
+
+  // Reading time estimate (words / 220 wpm)
+  const readingMinutes = activeDocObj
+    ? Math.max(1, Math.round(activeDocObj.content.split(/\s+/).length / 220))
+    : 0
+
+  // Parse headings from active doc content for TOC
+  const tocItems = React.useMemo<
+    { id: string; text: string; level: number }[]
+  >(() => {
+    if (!activeDocObj) return []
+    const lines = activeDocObj.content.split("\n")
+    const items: { id: string; text: string; level: number }[] = []
+    let inCodeBlock = false
+    for (const line of lines) {
+      if (line.trim().startsWith("```")) {
+        inCodeBlock = !inCodeBlock
+        continue
+      }
+      if (inCodeBlock) continue
+      const m = /^(#{1,3})\s+(.+)$/.exec(line)
+      if (!m) continue
+      const level = m[1].length
+      if (level === 1) continue // h1 is the title, skip in TOC
+      const text = m[2].replace(/[*_`]/g, "").trim()
+      const id = slugifyHeading(text)
+      items.push({ id, text, level })
+    }
+    return items
+  }, [activeDocObj])
 
   React.useEffect(() => {
     if (!slug) {
@@ -73,33 +108,135 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data) => {
         setProject(data.project)
-        setActiveDoc(data.project.docs[0]?.id ?? null)
+        // Sync active doc from URL hash if present (deep-linking)
+        const hash = parseDrawerHash()
+        const fromHash = hash.section
+          ? data.project.docs.find(
+              (d: ProjectDoc) =>
+                slugifyHeading(d.section) === hash.section
+            )?.id
+          : undefined
+        setActiveDoc(fromHash ?? data.project.docs[0]?.id ?? null)
       })
       .catch(() => setProject(null))
       .finally(() => setLoading(false))
   }, [slug])
 
-  // Reset scroll + reading progress on doc change
+  // Deep-linking: update URL hash when project/section changes
+  React.useEffect(() => {
+    if (!slug || !project || !activeDoc) return
+    const doc = project.docs.find((d) => d.id === activeDoc)
+    if (!doc) return
+    const sectionSlug = slugifyHeading(doc.section)
+    const newHash = `#/project/${slug}/${sectionSlug}`
+    if (window.location.hash !== newHash) {
+      window.history.replaceState(null, "", newHash)
+    }
+  }, [slug, project, activeDoc])
+
+  // Reset scroll + reading progress + active heading on doc change
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0
     setReadingPct(0)
+    setActiveHeading(null)
+    headingRefs.current.clear()
   }, [activeDoc])
 
-  // Track reading progress
+  // Track reading progress + active heading (scroll-spy inside drawer)
   const onContentScroll = React.useCallback(() => {
     const el = scrollRef.current
     if (!el) return
     const max = el.scrollHeight - el.clientHeight
     const pct = max > 0 ? Math.min(100, Math.max(0, (el.scrollTop / max) * 100)) : 0
     setReadingPct(pct)
+    // Active heading: find the topmost h2/h3 whose top is above a threshold
+    let current: string | null = null
+    const offset = 80
+    for (const [id, node] of headingRefs.current) {
+      if (node.offsetTop - el.offsetTop - el.scrollTop <= offset) {
+        current = id
+      } else {
+        break
+      }
+    }
+    setActiveHeading(current)
   }, [])
 
-  const activeDocObj = project?.docs.find((d) => d.id === activeDoc) ?? null
+  // Smooth-scroll a heading into view inside the drawer content
+  const jumpToHeading = React.useCallback((id: string) => {
+    const el = scrollRef.current
+    const node = headingRefs.current.get(id)
+    if (!el || !node) return
+    const top = node.offsetTop - el.offsetTop - 16
+    el.scrollTo({ top, behavior: "smooth" })
+  }, [])
 
-  // Reading time estimate (words / 220 wpm)
-  const readingMinutes = activeDocObj
-    ? Math.max(1, Math.round(activeDocObj.content.split(/\s+/).length / 220))
-    : 0
+  // Inject heading ids into rendered markdown
+  const markdownComponents = React.useMemo(
+    () => ({
+      code({ className, children, ...props }: any) {
+        const match = /language-(\w+)/.exec(className || "")
+        const raw = String(children).replace(/\n$/, "")
+        const isInline = !match && !raw.includes("\n")
+        if (isInline) {
+          return (
+            <code className={className} {...props}>
+              {children}
+            </code>
+          )
+        }
+        return (
+          <div className="relative group/code">
+            <CopyCodeButton code={raw} />
+            <SyntaxHighlighter
+              // @ts-expect-error - style prop typing
+              style={oneDark}
+              language={match?.[1] ?? "text"}
+              PreTag="div"
+              customStyle={{
+                margin: 0,
+                background: "transparent",
+                fontSize: "0.85rem",
+              }}
+            >
+              {raw}
+            </SyntaxHighlighter>
+          </div>
+        )
+      },
+      h2({ children }: any) {
+        const text = String(children).replace(/[*_`]/g, "")
+        const id = slugifyHeading(text)
+        return (
+          <h2
+            id={id}
+            ref={(n) => {
+              if (n) headingRefs.current.set(id, n)
+              else headingRefs.current.delete(id)
+            }}
+          >
+            {children}
+          </h2>
+        )
+      },
+      h3({ children }: any) {
+        const text = String(children).replace(/[*_`]/g, "")
+        const id = slugifyHeading(text)
+        return (
+          <h3
+            id={id}
+            ref={(n) => {
+              if (n) headingRefs.current.set(id, n)
+              else headingRefs.current.delete(id)
+            }}
+          >
+            {children}
+          </h3>
+        )
+      },
+    }),
+    []
+  )
 
   return (
     <Sheet open={!!slug} onOpenChange={(o) => !o && onClose()}>
@@ -173,8 +310,8 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
 
         {/* Body: section nav + content */}
         <div className="flex-1 min-h-0 flex">
-          {/* Section nav */}
-          <aside className="hidden sm:flex flex-col gap-1 w-52 lg:w-60 p-3 border-r border-foreground/8 shrink-0 overflow-y-auto thin-scroll">
+          {/* Section nav + TOC */}
+          <aside className="hidden sm:flex flex-col gap-1 w-52 lg:w-64 p-3 border-r border-foreground/8 shrink-0 overflow-y-auto thin-scroll">
             <p className="px-2 pt-1 pb-2 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
               Documentation
             </p>
@@ -207,6 +344,35 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
                     </button>
                   )
                 })}
+
+            {/* On this page (TOC) */}
+            {!loading && tocItems.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-foreground/8">
+                <div className="px-2 pb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                  <List className="h-3 w-3" />
+                  On this page
+                </div>
+                <nav className="flex flex-col" data-toc>
+                  {tocItems.map((item) => (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        jumpToHeading(item.id)
+                      }}
+                      data-active={activeHeading === item.id}
+                      className={cn(
+                        "toc-link",
+                        item.level === 3 && "pl-5"
+                      )}
+                    >
+                      {item.text}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            )}
           </aside>
 
           {/* Mobile section dropdown */}
@@ -233,13 +399,14 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
               aria-hidden="true"
             />
 
-            {/* Section meta (reading time) */}
+            {/* Section meta (reading time + share) */}
             {!loading && activeDocObj && (
               <div className="mb-4 flex items-center gap-2 text-[11px] text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 <span>{readingMinutes} min read</span>
                 <span className="opacity-40">·</span>
                 <span>{activeDocObj.section}</span>
+                <ShareLinkButton />
               </div>
             )}
 
@@ -255,38 +422,7 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
               <article className="prose-doc max-w-none animate-fade-up">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
-                  components={{
-                    code({ className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || "")
-                      const raw = String(children).replace(/\n$/, "")
-                      const isInline = !match && !raw.includes("\n")
-                      if (isInline) {
-                        return (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        )
-                      }
-                      return (
-                        <div className="relative group/code">
-                          <CopyCodeButton code={raw} />
-                          <SyntaxHighlighter
-                            // @ts-expect-error - style prop typing
-                            style={oneDark}
-                            language={match?.[1] ?? "text"}
-                            PreTag="div"
-                            customStyle={{
-                              margin: 0,
-                              background: "transparent",
-                              fontSize: "0.85rem",
-                            }}
-                          >
-                            {raw}
-                          </SyntaxHighlighter>
-                        </div>
-                      )
-                    },
-                  }}
+                  components={markdownComponents}
                 >
                   {activeDocObj.content}
                 </ReactMarkdown>
@@ -429,4 +565,71 @@ function CopyCodeButton({ code }: { code: string }) {
       )}
     </button>
   )
+}
+
+function ShareLinkButton() {
+  const [copied, setCopied] = React.useState(false)
+  const tRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  React.useEffect(
+    () => () => {
+      if (tRef.current) clearTimeout(tRef.current)
+    },
+    []
+  )
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      if (tRef.current) clearTimeout(tRef.current)
+      tRef.current = setTimeout(() => setCopied(false), 1600)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <button
+      onClick={onCopy}
+      aria-label="Copy link to this section"
+      title="Copy shareable link"
+      className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-foreground/5 transition-colors"
+      type="button"
+    >
+      {copied ? (
+        <>
+          <Check className="h-3 w-3 text-emerald-500" />
+          <span className="text-emerald-500">Linked</span>
+        </>
+      ) : (
+        <>
+          <Tag className="h-3 w-3" />
+          Copy link
+        </>
+      )}
+    </button>
+  )
+}
+
+// ---------- helpers ----------
+function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+}
+
+function parseDrawerHash(): {
+  project: string | null
+  section: string | null
+} {
+  if (typeof window === "undefined") return { project: null, section: null }
+  const hash = window.location.hash
+  // Expected: #/project/<slug>/<section-slug>
+  const m = /^#\/project\/([^/]+)\/([^/]+)/.exec(hash)
+  if (!m) return { project: null, section: null }
+  return { project: decodeURIComponent(m[1]), section: decodeURIComponent(m[2]) }
 }
