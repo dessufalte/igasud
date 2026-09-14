@@ -50,18 +50,19 @@ export const metadata: Metadata = {
     siteName: "Studio",
     images: [
       {
-        url: "/favicon.svg",
-        width: 64,
-        height: 64,
-        alt: "Studio logo",
+        url: "/og-image.png",
+        width: 1344,
+        height: 768,
+        alt: "Studio — Portfolio & Project Documentation",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Studio — Portfolio",
     description:
       "A minimalist portfolio with full project documentation.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

@@ -34,8 +34,14 @@ const GROUPS: { group: string; items: { keys: string[]; label: string }[] }[] = 
     ],
   },
   {
-    group: "Admin",
-    items: [{ keys: ["Shift", "A"], label: "Open messages inbox" }],
+    group: "Admin (inbox)",
+    items: [
+      { keys: ["Shift", "A"], label: "Open messages inbox" },
+      { keys: ["j"], label: "Next message" },
+      { keys: ["k"], label: "Previous message" },
+      { keys: ["e"], label: "Mark current as read" },
+      { keys: ["#"], label: "Delete current message" },
+    ],
   },
 ]
 

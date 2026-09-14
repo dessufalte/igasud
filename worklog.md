@@ -803,3 +803,78 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Admin message pagination** — for large message counts, add pagination/infinite scroll
 7. **Admin message date filter** — filter by date range
 8. **Admin keyboard shortcuts** — j/k to navigate messages, e to mark read, # to delete
+
+---
+Task ID: 15 (cron round 8)
+Agent: main (webDevReview cron)
+Task: QA + add blog/writing section, admin keyboard shortcuts, now-playing wired to data, OG social preview image
+
+## Current project status description/assessment
+Project was stable through round 7 (tasks 0-14). Initial QA pass: zero console errors, zero page errors, dev server healthy. No bugs found. Identified gaps from round 7's recommendations: (1) no blog/writing section; (2) no admin keyboard shortcuts; (3) "Now playing" widget was static (hardcoded Prism Motion v2); (4) OG image was 64px favicon.
+
+Decision: stable → focus on **content (blog section), admin efficiency (keyboard shortcuts), data-driven widgets (now-playing), and social sharing polish (OG image)** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Blog/Writing section** with full article viewer
+   - New Prisma `Article` model (slug, title, excerpt, body markdown, tag, readingMins, publishedAt) → `bun run db:push`
+   - API routes: `GET /api/articles` (list summaries), `GET /api/articles/[slug]` (full article)
+   - Seeded 4 articles: "On building calm interfaces" (Essay), "Edge-first architecture, explained simply" (Writing), "Design tokens that actually scale" (Writing), "Ship small, ship often" (Note) — each with full markdown body (headings, code blocks, tables, lists, blockquotes)
+   - New `ArticleDrawer` component (`src/components/article-drawer.tsx`) — Sheet-based right drawer with: header (tag/date/reading-time meta chips, title, excerpt), markdown content with syntax-highlighted code blocks + copy buttons, reading progress bar, prev/next article navigation, `[/]` keyboard nav, `doc-enter` animation
+   - Writing section in page.tsx: 2-column grid of article cards (tag chip, reading time, title, excerpt, date, "Read" CTA), framer-motion entrance, accent glow
+   - "Writing" nav link added to navbar + scroll-spy SECTION_IDS
+   - Verified: 4 article cards render, clicking opens drawer with h1 + reading progress + prev/next + 3 meta chips
+
+2. **Admin keyboard shortcuts** (j/k/e/#)
+   - `j` / `ArrowDown` → next message
+   - `k` / `ArrowUp` → previous message
+   - `e` → mark current as read
+   - `#` → delete current message
+   - Ignores keypresses when focus is in input/textarea/select/contentEditable
+   - All 4 shortcuts documented in ShortcutsHelp dialog under "Admin (inbox)" group
+   - Verified: j navigates Sofia→Priya, k navigates Priya→Sofia; shortcuts help shows all 4
+
+3. **"Now playing" widget wired to real data**
+   - Previously hardcoded "Prism Motion v2 — scroll storytelling SDK"
+   - Now dynamically finds the first `in-progress` project from the API
+   - Shows project title + tagline + top 3 tech stack
+   - Pulsing dot uses the project's accent color
+   - Clicking the widget opens that project's documentation drawer
+   - Verified: shows "Prism Motion — Declarative scroll-driven..." with accent dot, clickable
+
+4. **OG social preview image** (1344×768)
+   - Generated via `z-ai image` CLI: minimalist dark glassmorphism with violet/cyan gradient ambient blobs
+   - Saved to `/public/og-image.png`
+   - Updated layout.tsx metadata: OG image url/width/height/alt, twitter card upgraded to `summary_large_image` with image
+   - Verified: `og:image` meta points to `/og-image.png`, width 1344, twitter:card = `summary_large_image`
+
+### Styling improvements
+5. **Article cards** — glass cards with tilt-card hover, accent glow, tag chip + reading time, excerpt line-clamp-3, date + "Read" CTA footer with border-top
+6. **Article drawer** — reuses doc drawer design language (meta chips, reading progress, doc-enter animation, prev/next nav cards, copy code buttons)
+7. **Now-playing widget** — now a button (clickable), accent-colored dot, group-hover text color change
+8. **Shortcuts help** — new "Admin (inbox)" group with j/k/e/# shortcuts
+
+### Bug fixed during this round
+- **Stale Prisma Client after adding Article model**: articles API returned 500 "Failed to load articles" because the dev server's `globalThis.prisma` singleton was created before the Article model was added. Fixed by killing the dev server + clearing `.next` cache + restarting via `.zscripts/dev.sh` (which properly detaches via setsid). After restart, articles API returns 200 with 4 articles.
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Writing section: 4 article cards, first "On building calm interfaces"
+- ✅ Article drawer: h1 title, reading progress, prev/next nav, 3 meta chips, markdown rendered
+- ✅ Now-playing: wired to Prism Motion (in-progress), accent dot, clickable → opens drawer
+- ✅ OG image: meta points to /og-image.png, 1344×768, twitter:card = summary_large_image
+- ✅ Admin j/k: j → Sofia→Priya, k → Priya→Sofia
+- ✅ Shortcuts help: all 4 admin shortcuts documented (j/k/e/#)
+- ✅ Mobile (iPhone 14): Writing section with 4 articles, now-playing present, footer at bottom
+- ✅ Dev server: all 200s (including /api/articles, /api/articles/[slug]), lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **Page transitions** via Next.js View Transitions API
+2. **Admin auth** — currently open via Shift+A with no auth; add a simple password gate
+3. **Admin message pagination** — for large message counts, add pagination/infinite scroll
+4. **Article deep-linking** — URL hash for open article (like project drawer has)
+5. **Article search** — search within writing section
+6. **Article tags filter** — filter by tag (Essay/Writing/Note/Talk)
+7. **RSS feed** — generate an RSS feed for the writing section
+8. **Reading time tracking** — track total reading time across articles

@@ -27,12 +27,15 @@ import {
   Quote,
   LayoutGrid,
   List as ListIcon,
+  PenLine,
+  Clock,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { AmbientBackground } from "@/components/ambient-background"
 import { ProjectCard } from "@/components/project-card"
 import { ProjectListCard } from "@/components/project-list-card"
 import { ProjectDocDrawer } from "@/components/project-doc-drawer"
+import { ArticleDrawer } from "@/components/article-drawer"
 import { CommandPalette } from "@/components/command-palette"
 import { ScrollUtilities } from "@/components/scroll-utilities"
 import { ShortcutsHelp } from "@/components/shortcuts-help"
@@ -42,7 +45,7 @@ import { AdminPanel } from "@/components/admin-panel"
 import { useLocalStorage } from "@/hooks/use-local-storage"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
-import type { ProjectSummary } from "@/lib/types"
+import type { ProjectSummary, ArticleSummary } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 const CATEGORIES = [
@@ -71,7 +74,7 @@ const STATS = [
   { value: Infinity, suffix: "", label: "Curiosity" },
 ]
 
-const SECTION_IDS = ["work", "about", "skills", "contact"] as const
+const SECTION_IDS = ["work", "about", "skills", "writing", "contact"] as const
 
 export default function Home() {
   const [projects, setProjects] = React.useState<ProjectSummary[]>([])
@@ -79,6 +82,8 @@ export default function Home() {
   const [activeCategory, setActiveCategory] =
     React.useState<(typeof CATEGORIES)[number]>("All")
   const [activeSlug, setActiveSlug] = React.useState<string | null>(null)
+  const [articles, setArticles] = React.useState<ArticleSummary[]>([])
+  const [activeArticle, setActiveArticle] = React.useState<string | null>(null)
   const [search, setSearch] = React.useState("")
   const [cmdOpen, setCmdOpen] = React.useState(false)
   const [helpOpen, setHelpOpen] = React.useState(false)
@@ -98,6 +103,12 @@ export default function Home() {
       .then((data) => setProjects(data.projects ?? []))
       .catch(() => toast.error("Failed to load projects"))
       .finally(() => setLoading(false))
+    fetch("/api/articles")
+      .then((r) => r.json())
+      .then((data) => setArticles(data.articles ?? []))
+      .catch(() => {
+        /* articles are non-critical */
+      })
   }, [])
 
   // Global keyboard shortcuts
@@ -394,30 +405,42 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Currently building widget */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-6 mt-2 border-t border-foreground/8">
-                  <div className="flex items-center gap-2.5">
-                    <span className="now-playing-dot" aria-hidden="true" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Currently building
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold tracking-tight">
-                      Prism Motion v2 — scroll storytelling SDK
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      A 3kb runtime, declarative API, shipping Q1.
-                    </p>
-                  </div>
-                  <a
-                    href="#work"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground/80 hover:text-foreground transition-colors shrink-0"
-                  >
-                    See progress
-                    <ArrowUpRight className="h-3 w-3" />
-                  </a>
-                </div>
+                {/* Currently building widget — wired to in-progress projects */}
+                {(() => {
+                  const inProgress = projects.find(
+                    (p) => p.status === "in-progress"
+                  )
+                  if (!inProgress) return null
+                  return (
+                    <button
+                      onClick={() => setActiveSlug(inProgress.slug)}
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-6 mt-2 border-t border-foreground/8 w-full text-left group/now"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="now-playing-dot"
+                          aria-hidden="true"
+                          style={{ background: inProgress.accent }}
+                        />
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Currently building
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold tracking-tight truncate">
+                          {inProgress.title} — {inProgress.tagline}
+                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {inProgress.techStack.slice(0, 3).join(" · ")}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground/80 group-hover/now:text-foreground transition-colors shrink-0">
+                        See progress
+                        <ArrowUpRight className="h-3 w-3" />
+                      </span>
+                    </button>
+                  )
+                })()}
               </div>
             </motion.div>
           </div>
@@ -791,6 +814,83 @@ export default function Home() {
           <div className="section-divider rounded-full" />
         </div>
 
+        {/* ============== WRITING / BLOG ============== */}
+        {articles.length > 0 && (
+          <section
+            id="writing"
+            className="px-4 sm:px-6 pt-20 sm:pt-28 scroll-mt-24"
+          >
+            <div className="mx-auto max-w-6xl">
+              <SectionHeader
+                eyebrow="Writing"
+                title="Notes on craft"
+                description="Essays and field notes on design systems, edge architecture, and shipping software. Tap any to read the full piece."
+              />
+              <div className="grid gap-4 sm:gap-5 md:grid-cols-2 mt-8 sm:mt-10">
+                {articles.map((a, i) => (
+                  <motion.button
+                    key={a.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{
+                      duration: 0.5,
+                      delay: Math.min(i * 0.06, 0.3),
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    onClick={() => setActiveArticle(a.slug)}
+                    className="group relative text-left w-full overflow-hidden rounded-2xl glass glass-sheen glass-hover tilt-card p-5 sm:p-6 flex flex-col gap-3"
+                    aria-label={`Read article: ${a.title}`}
+                  >
+                    {/* Accent glow */}
+                    <div
+                      className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-60 z-0"
+                      style={{
+                        background:
+                          "radial-gradient(circle, oklch(0.6 0.25 290), transparent 70%)",
+                      }}
+                    />
+                    <div className="relative flex items-center gap-2 flex-wrap z-10">
+                      <span className="meta-chip">
+                        <PenLine className="h-3 w-3" />
+                        {a.tag}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {a.readingMins} min
+                      </span>
+                    </div>
+                    <h3 className="relative text-lg sm:text-xl font-semibold tracking-tight leading-tight z-10">
+                      {a.title}
+                    </h3>
+                    <p className="relative text-sm text-muted-foreground leading-relaxed line-clamp-3 z-10">
+                      {a.excerpt}
+                    </p>
+                    <div className="relative mt-auto pt-3 border-t border-foreground/5 flex items-center justify-between z-10">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(a.publishedAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 group-hover:text-foreground transition-colors">
+                        Read
+                        <ArrowUpRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Divider */}
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 sm:pt-28">
+          <div className="section-divider rounded-full" />
+        </div>
+
         {/* ============== CONTACT ============== */}
         <section
           id="contact"
@@ -889,6 +989,14 @@ export default function Home() {
         allSlugs={allSlugs}
         onNavigate={(slug) => setActiveSlug(slug)}
         relatedProjects={relatedProjects}
+      />
+
+      {/* ============== ARTICLE DRAWER ============== */}
+      <ArticleDrawer
+        slug={activeArticle}
+        onClose={() => setActiveArticle(null)}
+        articles={articles}
+        onNavigate={(slug) => setActiveArticle(slug)}
       />
     </div>
   )

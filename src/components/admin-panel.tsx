@@ -121,6 +121,40 @@ export function AdminPanel({ open, onOpenChange }: AdminPanelProps) {
     }
   }
 
+  // Keyboard shortcuts: j/k navigate, e mark read, # delete
+  React.useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement
+      if (
+        t.tagName === "INPUT" ||
+        t.tagName === "TEXTAREA" ||
+        t.tagName === "SELECT" ||
+        t.isContentEditable
+      )
+        return
+      if (e.key === "j" || e.key === "ArrowDown") {
+        e.preventDefault()
+        const idx = visibleMessages.findIndex((m) => m.id === selected)
+        const next = visibleMessages[Math.min(idx + 1, visibleMessages.length - 1)]
+        if (next) markRead(next.id)
+      } else if (e.key === "k" || e.key === "ArrowUp") {
+        e.preventDefault()
+        const idx = visibleMessages.findIndex((m) => m.id === selected)
+        const prev = visibleMessages[Math.max(idx - 1, 0)]
+        if (prev) markRead(prev.id)
+      } else if (e.key === "e" && selected) {
+        e.preventDefault()
+        markRead(selected)
+      } else if (e.key === "#" && selected) {
+        e.preventDefault()
+        deleteMessage(selected)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [open, visibleMessages, selected])
+
   // Bulk: mark all selected as read
   const bulkMarkRead = async () => {
     const ids = Array.from(checked)

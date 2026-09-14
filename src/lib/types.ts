@@ -31,6 +31,20 @@ export interface ProjectDoc {
   content: string
 }
 
+export interface ArticleSummary {
+  id: string
+  slug: string
+  title: string
+  excerpt: string
+  tag: string
+  readingMins: number
+  publishedAt: string
+}
+
+export interface ArticleDetail extends ArticleSummary {
+  body: string
+}
+
 export interface ProjectDetail extends ProjectSummary {
   docs: ProjectDoc[]
 }
