@@ -18,6 +18,7 @@ export async function GET() {
         status: true,
         featured: true,
         accent: true,
+        thumbnail: true,
         techStack: true,
         links: true,
         _count: { select: { docs: true } },

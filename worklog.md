@@ -374,3 +374,126 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Search keyboard nav** in Work section search input (Enter to open first result in drawer)
 7. **TOC active-heading spy** needs scroll trigger to mark first heading active at section top (currently needs scroll past 80px threshold)
 8. **OG image** as full 1200x630 image (currently reuses 64px favicon)
+
+---
+Task ID: IMG-1
+Agent: image-generation subagent
+Task: Generate 6 project cover images via z-ai CLI
+
+Work Log:
+- Read /home/z/my-project/worklog.md to understand project context (minimalist Apple-style portfolio with glassmorphism, 6 seeded projects)
+- Verified /home/z/my-project/download/projects/ directory exists (created via mkdir -p)
+- Generated aurora-design-system.png (violet #8b5cf6, Design Systems theme: layered glass panels, geometric tokens, grid lines)
+- Generated lumen-analytics.png (cyan #06b6d4, Data & Analytics theme: flowing data streams, light particles)
+- Generated harbor-cms.png (amber #f59e0b, Developer Tools theme: editorial grid, CRDT sync waves)
+- Generated driftwood-cli.png (emerald #10b981, Developer Tools theme: monospace grid, scaffolding blocks)
+- Generated prism-motion.png (pink #ec4899, Open Source theme: motion paths, prism light refraction)
+- Generated atlas-maps.png (indigo #6366f1, Data & Analytics theme: topographic contours, vector tiles, 3D terrain)
+- All 6 prompts followed the prescribed minimalist Apple-style + glassmorphism aesthetic with no text, size 1344x768
+- First CLI invocation timed out at default 60s; retried with 180s timeout and succeeded for all 6 generations on first retry attempt (no retries needed beyond timeout adjustment)
+- Verified all 6 files present in /home/z/my-project/download/projects/ via ls -la
+
+Stage Summary:
+- Generated 6 images saved to /home/z/my-project/download/projects/
+- Files:
+  - aurora-design-system.png (84,852 bytes)
+  - lumen-analytics.png (71,120 bytes)
+  - harbor-cms.png (52,949 bytes)
+  - driftwood-cli.png (71,503 bytes)
+  - prism-motion.png (65,265 bytes)
+  - atlas-maps.png (64,997 bytes)
+- No issues: all generations succeeded. Initial 60s timeout was insufficient; bumped to 180s and all subsequent calls completed without error.
+
+---
+Task ID: 10 (cron round 3)
+Agent: main (webDevReview cron)
+Task: QA + add project cover images, cursor glow, hero parallax, currently-building widget, tech marquee, search Enter nav, TOC active-heading fix, prev/next project nav
+
+## Current project status description/assessment
+Project was stable through round 2 (tasks 0-9). Initial QA pass: zero console errors, zero page errors, dev server healthy. Found two gaps from round 2's known issues: (1) TOC active-heading not marked at section top (no heading highlighted until scrolled past 80px); (2) search input Enter key did nothing. No bugs/blockers.
+
+Decision: stable → focus on **visual richness (project cover images), delight micro-interactions (cursor glow, parallax, marquee), and documentation navigation (prev/next project, search Enter, TOC fix)** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Project cover images** (generated via Image-Generation skill)
+   - Delegated to a subagent (Task ID IMG-1) which generated 6 abstract minimalist cover images via `z-ai image` CLI, one per project, each themed to the project's accent color + category
+   - Copied to `/public/projects/<slug>.png`, populated `thumbnail` field in Prisma schema + re-seeded
+   - Updated API `/api/projects` to return `thumbnail`, types updated
+   - Rewrote `ProjectCard` to render cover image at top (16:9 aspect, `next/image` with fill), with status chip overlay + gradient arrow button overlay; image zooms on card hover
+   - Verified: 9 cover images load in DOM (3 featured + 6 grid), naturalW 422, served via next/image optimizer
+
+2. **Cursor glow follower** (`src/components/cursor-glow.tsx`)
+   - 380px radial gradient that follows cursor (rAF-throttled), fades in on first move, fades out on document leave
+   - Only enables on devices with `(hover: hover) and (pointer: fine)` — disabled on touch/mobile
+   - Violet glow in light mode, cyan glow in dark mode
+   - Verified: correctly disabled in headless agent-browser (matchMedia reports no hover); will appear on real desktop
+
+3. **Hero parallax** (ambient blobs move on scroll)
+   - Updated `AmbientBackground` to add scroll listeners; 3 blobs translate at different rates (0.15, -0.1, 0.08) for depth
+   - rAF-throttled, passive scroll listener
+   - Verified: `.parallax-blob` class present on all 3 blobs
+
+4. **"Currently building" widget** in hero
+   - Below the stats row, separated by a border: emerald pulsing dot + "Currently building" label + project name (Prism Motion v2) + description + "See progress" link
+   - Uses `now-playing-dot` CSS with expanding ring pulse animation
+   - Verified: present in DOM, text "Prism Motion v2 — scroll storytelling SDK"
+
+5. **Tech marquee ticker** (`src/components/tech-marquee.tsx`)
+   - Infinite horizontal scroll of 16 technologies (TypeScript, Next.js 16, React 19, Tailwind CSS 4, Prisma, shadcn/ui, Framer Motion, Edge Runtime, Zustand, TanStack Query, Vitest, Playwright, Zod, tRPC, Storybook, Figma)
+   - Pauses on hover, edge-mask gradient fade
+   - Rendered in its own glass strip section right after the hero
+   - Verified: 96 track items (16×2 duplicated×3 spans), pauses on hover
+
+6. **Search Enter keyboard navigation**
+   - Pressing Enter in the Work section search input opens the first matching project's drawer
+   - Updated placeholder: "Search projects…  (press Enter to open first match)"
+   - Verified: typed "atlas" + Enter → drawer opened Atlas Maps (h1 confirmed)
+
+7. **TOC active-heading fix** (round 2 known issue)
+   - Added effect that marks the first TOC heading active 60ms after a section loads (so TOC isn't blank at section top)
+   - Updated `onContentScroll` to fall back to first heading if no heading is past the trigger line
+   - Verified: Aurora Overview opens with "Why this exists" active (previously none active)
+
+8. **Prev/next project navigation** in doc drawer
+   - Drawer now accepts `allSlugs` + `onNavigate` props; computes cyclic prev/next from current slug
+   - Two nav cards at the bottom of each doc section: "Previous" (left) and "Next" (right), with project name (slug→Title Case)
+   - Clicking navigates to that project's drawer, updates URL hash
+   - Verified: clicked "NEXT Harbor Cms" → drawer switched to Harbor CMS, hash updated to `#/project/harbor-cms/overview`
+
+### Styling improvements
+9. **Cover image wrap** — 16:9 aspect ratio container with gradient overlay (transparent→dark bottom), image zoom (scale 1.06) on card hover
+10. **Now-playing dot** — pulsing emerald dot with expanding ring (`now-playing-pulse` keyframe)
+11. **Marquee** — edge-masked infinite scroll with hover-pause
+12. **Proj-nav-card** — hover lift transition for prev/next cards
+13. **Parallax-blob** — smooth transform transition on ambient blobs
+14. **Img-skeleton** — shimmer animation for image loading states (available for future use)
+15. **Fixed invalid CSS** — `var(--foreground/8)` (invalid in vanilla CSS) → `oklch(0.5 0.01 255 / 0.08)` in `.nav-link-spy[data-active="true"]` rule
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ 9 cover images load via next/image (3 featured + 6 grid), naturalW 422
+- ✅ Marquee: 96 items, tech names correct, pauses on hover
+- ✅ Currently building widget: emerald pulsing dot + "Prism Motion v2" text
+- ✅ Parallax blobs present (3 × `.parallax-blob`)
+- ✅ Cursor glow: correctly disabled in headless (will appear on real desktop with hover)
+- ✅ Scroll-spy: Work section → "Work" highlighted in navbar
+- ✅ TOC active at section top: Aurora Overview opens with "Why this exists" active
+- ✅ Prev/next nav: click "NEXT Harbor Cms" → drawer switches to Harbor CMS, hash updates
+- ✅ Search Enter: "atlas" + Enter → Atlas Maps drawer opens
+- ✅ Mobile (iPhone 14): all features present (9 covers, marquee, now-playing, nav-spy), footer at bottom
+- ✅ Dev server: all 200s, lint clean, zero runtime errors after CSS fix + cache clear
+
+### Bug fixed during this round
+- **Invalid CSS `var(--foreground/8)`**: round 2's `.nav-link-spy[data-active="true"]` rule used `background: var(--foreground/8)` which is invalid (CSS `var()` doesn't support opacity shorthand). Caused a CSS parse error (500 on `/` after clearing `.next` cache). Fixed by replacing with `oklch(0.5 0.01 255 / 0.08)`. Required killing stale dev server (port 3000 held by orphaned next-server) + clearing `.next` cache + restarting via `.zscripts/dev.sh` (which properly detaches).
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **OG image as full 1200x630** — currently reuses 64px favicon; generate a proper social preview
+2. **Admin view for messages** — list/read/delete saved contact messages (DB has them, no UI)
+3. **Project cover image in drawer header** — show the cover as a hero banner above the doc title
+4. **Blog/writing section** — reuse Doc model + markdown rendering for articles
+5. **Page transitions** via Next.js View Transitions API
+6. **Keyboard shortcut: `[` / `]`** to navigate prev/next project within the drawer
+7. **Image lazy-loading polish** — blur placeholder while cover images load
+8. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status

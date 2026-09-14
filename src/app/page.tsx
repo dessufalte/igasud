@@ -33,6 +33,8 @@ import { ProjectDocDrawer } from "@/components/project-doc-drawer"
 import { CommandPalette } from "@/components/command-palette"
 import { ScrollUtilities } from "@/components/scroll-utilities"
 import { ShortcutsHelp } from "@/components/shortcuts-help"
+import { CursorGlow } from "@/components/cursor-glow"
+import { TechMarquee } from "@/components/tech-marquee"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import type { ProjectSummary } from "@/lib/types"
@@ -207,9 +209,19 @@ export default function Home() {
     [projects]
   )
 
+  // All slugs in display order (featured first, then by year) for prev/next nav
+  const allSlugs = React.useMemo(
+    () =>
+      [...projects]
+        .sort((a, b) => Number(b.featured) - Number(a.featured) || b.year - a.year)
+        .map((p) => p.slug),
+    [projects]
+  )
+
   return (
     <div id="top" className="relative min-h-screen flex flex-col">
       <AmbientBackground />
+      <CursorGlow />
       <ScrollUtilities />
       <Navbar
         onOpenCommand={() => setCmdOpen(true)}
@@ -311,8 +323,40 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+
+                {/* Currently building widget */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-6 mt-2 border-t border-foreground/8">
+                  <div className="flex items-center gap-2.5">
+                    <span className="now-playing-dot" aria-hidden="true" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Currently building
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold tracking-tight">
+                      Prism Motion v2 — scroll storytelling SDK
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      A 3kb runtime, declarative API, shipping Q1.
+                    </p>
+                  </div>
+                  <a
+                    href="#work"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground/80 hover:text-foreground transition-colors shrink-0"
+                  >
+                    See progress
+                    <ArrowUpRight className="h-3 w-3" />
+                  </a>
+                </div>
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* ============== TECH MARQUEE ============== */}
+        <section className="px-4 sm:px-6 pt-10 sm:pt-14">
+          <div className="mx-auto max-w-6xl rounded-2xl glass glass-sheen py-2">
+            <TechMarquee />
           </div>
         </section>
 
@@ -377,7 +421,13 @@ export default function Home() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search projects…"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && filtered.length > 0) {
+                      e.preventDefault()
+                      setActiveSlug(filtered[0].slug)
+                    }
+                  }}
+                  placeholder="Search projects…  (press Enter to open first match)"
                   aria-label="Search projects"
                   className="w-full h-9 pl-9 pr-9 rounded-full bg-foreground/4 border border-foreground/8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:bg-foreground/6 transition-all"
                 />
@@ -712,6 +762,8 @@ export default function Home() {
       <ProjectDocDrawer
         slug={activeSlug}
         onClose={() => setActiveSlug(null)}
+        allSlugs={allSlugs}
+        onNavigate={(slug) => setActiveSlug(slug)}
       />
     </div>
   )

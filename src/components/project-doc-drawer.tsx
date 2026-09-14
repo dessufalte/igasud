@@ -32,6 +32,8 @@ import {
   Copy,
   Clock,
   List,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react"
 import type { ProjectDetail, ProjectDoc } from "@/lib/types"
@@ -53,9 +55,17 @@ const ICONS: Record<string, LucideIcon> = {
 interface ProjectDocDrawerProps {
   slug: string | null
   onClose: () => void
+  /** Ordered list of all project slugs (for prev/next navigation). */
+  allSlugs: string[]
+  onNavigate: (slug: string) => void
 }
 
-export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
+export function ProjectDocDrawer({
+  slug,
+  onClose,
+  allSlugs,
+  onNavigate,
+}: ProjectDocDrawerProps) {
   const [project, setProject] = React.useState<ProjectDetail | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [activeDoc, setActiveDoc] = React.useState<string | null>(null)
@@ -65,6 +75,17 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
   const headingRefs = React.useRef<Map<string, HTMLHeadingElement>>(new Map())
 
   const activeDocObj = project?.docs.find((d) => d.id === activeDoc) ?? null
+
+  // Compute prev/next project slugs (cyclic)
+  const { prevSlug, nextSlug } = React.useMemo(() => {
+    if (!slug) return { prevSlug: null, nextSlug: null }
+    const idx = allSlugs.indexOf(slug)
+    if (idx === -1 || allSlugs.length === 0)
+      return { prevSlug: null, nextSlug: null }
+    const prev = allSlugs[(idx - 1 + allSlugs.length) % allSlugs.length]
+    const next = allSlugs[(idx + 1) % allSlugs.length]
+    return { prevSlug: prev, nextSlug: next }
+  }, [slug, allSlugs])
 
   // Reading time estimate (words / 220 wpm)
   const readingMinutes = activeDocObj
@@ -134,13 +155,20 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
     }
   }, [slug, project, activeDoc])
 
-  // Reset scroll + reading progress + active heading on doc change
+  // Reset scroll + reading progress on doc change. After render, mark the
+  // first heading active so the TOC isn't blank at section top.
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0
     setReadingPct(0)
     setActiveHeading(null)
     headingRefs.current.clear()
-  }, [activeDoc])
+    // After DOM commits the new content, default to the first TOC heading
+    const t = setTimeout(() => {
+      const first = tocItems[0]?.id ?? null
+      if (first) setActiveHeading(first)
+    }, 60)
+    return () => clearTimeout(t)
+  }, [activeDoc, tocItems])
 
   // Track reading progress + active heading (scroll-spy inside drawer)
   const onContentScroll = React.useCallback(() => {
@@ -149,9 +177,9 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
     const max = el.scrollHeight - el.clientHeight
     const pct = max > 0 ? Math.min(100, Math.max(0, (el.scrollTop / max) * 100)) : 0
     setReadingPct(pct)
-    // Active heading: find the topmost h2/h3 whose top is above a threshold
+    // Active heading: find the last heading whose top is above the trigger line
     let current: string | null = null
-    const offset = 80
+    const offset = 100
     for (const [id, node] of headingRefs.current) {
       if (node.offsetTop - el.offsetTop - el.scrollTop <= offset) {
         current = id
@@ -159,8 +187,12 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
         break
       }
     }
+    // If we haven't scrolled past any heading yet, mark the first one active
+    if (!current && tocItems.length > 0) {
+      current = tocItems[0].id
+    }
     setActiveHeading(current)
-  }, [])
+  }, [tocItems])
 
   // Smooth-scroll a heading into view inside the drawer content
   const jumpToHeading = React.useCallback((id: string) => {
@@ -445,6 +477,43 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
                     <ExternalLink className="h-3 w-3" />
                   </button>
                 </div>
+
+                {/* Prev / next project navigation */}
+                {allSlugs.length > 1 && (prevSlug || nextSlug) && (
+                  <nav
+                    aria-label="Project navigation"
+                    className="mt-8 grid grid-cols-2 gap-3"
+                  >
+                    {prevSlug && (
+                      <button
+                        onClick={() => onNavigate(prevSlug)}
+                        className="proj-nav-card group/nav rounded-xl glass p-3 text-left hover:bg-foreground/6"
+                      >
+                        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                          <ChevronLeft className="h-3 w-3" />
+                          Previous
+                        </div>
+                        <p className="mt-1 text-sm font-medium truncate">
+                          {formatSlug(prevSlug)}
+                        </p>
+                      </button>
+                    )}
+                    {nextSlug && (
+                      <button
+                        onClick={() => onNavigate(nextSlug)}
+                        className="proj-nav-card group/nav rounded-xl glass p-3 text-right hover:bg-foreground/6"
+                      >
+                        <div className="flex items-center justify-end gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                          Next
+                          <ChevronRight className="h-3 w-3" />
+                        </div>
+                        <p className="mt-1 text-sm font-medium truncate">
+                          {formatSlug(nextSlug)}
+                        </p>
+                      </button>
+                    )}
+                  </nav>
+                )}
               </article>
             )}
           </div>
@@ -632,4 +701,12 @@ function parseDrawerHash(): {
   const m = /^#\/project\/([^/]+)\/([^/]+)/.exec(hash)
   if (!m) return { project: null, section: null }
   return { project: decodeURIComponent(m[1]), section: decodeURIComponent(m[2]) }
+}
+
+// Turn a slug like "aurora-design-system" into "Aurora Design System"
+function formatSlug(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
 }

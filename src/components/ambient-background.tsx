@@ -1,11 +1,41 @@
 "use client"
 
+import * as React from "react"
+
 export function AmbientBackground() {
+  const blob1 = React.useRef<HTMLDivElement>(null)
+  const blob2 = React.useRef<HTMLDivElement>(null)
+  const blob3 = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    let raf = 0
+    const onScroll = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY
+        // Different parallax rates per blob for depth
+        if (blob1.current)
+          blob1.current.style.transform = `translateY(${y * 0.15}px)`
+        if (blob2.current)
+          blob2.current.style.transform = `translateY(${y * -0.1}px)`
+        if (blob3.current)
+          blob3.current.style.transform = `translateY(${y * 0.08}px)`
+      })
+    }
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
+
   return (
     <div className="ambient-bg" aria-hidden="true">
       {/* Top-left violet */}
       <div
-        className="ambient-blob animate-float-slow"
+        ref={blob1}
+        className="ambient-blob animate-float-slow parallax-blob"
         style={{
           top: "-15%",
           left: "-10%",
@@ -17,7 +47,8 @@ export function AmbientBackground() {
       />
       {/* Top-right cyan */}
       <div
-        className="ambient-blob animate-float-slower"
+        ref={blob2}
+        className="ambient-blob animate-float-slower parallax-blob"
         style={{
           top: "-5%",
           right: "-15%",
@@ -29,7 +60,8 @@ export function AmbientBackground() {
       />
       {/* Bottom warm */}
       <div
-        className="ambient-blob animate-float-slow"
+        ref={blob3}
+        className="ambient-blob animate-float-slow parallax-blob"
         style={{
           bottom: "-20%",
           left: "30%",

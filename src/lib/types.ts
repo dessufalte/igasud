@@ -17,6 +17,7 @@ export interface ProjectSummary {
   status: ProjectStatus
   featured: boolean
   accent: string
+  thumbnail: string | null
   techStack: string[]
   links: ProjectLinks | null
   _count: { docs: number }

@@ -104,6 +104,7 @@ async function main() {
         status: p.status,
         featured: p.featured,
         accent: p.accent,
+        thumbnail: `/projects/${p.slug}.png`,
         techStack: JSON.stringify(p.techStack),
         links: JSON.stringify(p.links),
       },

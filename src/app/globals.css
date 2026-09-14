@@ -717,7 +717,7 @@ kbd {
 }
 .nav-link-spy[data-active="true"] {
   color: var(--foreground);
-  background: var(--foreground/8);
+  background: oklch(0.5 0.01 255 / 0.08);
 }
 .nav-link-spy[data-active="true"]::after {
   content: "";
@@ -783,4 +783,163 @@ kbd {
 }
 .skill-card-shimmer:hover::after {
   transform: translateX(100%);
+}
+
+/* ---------- Cursor glow follower ---------- */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 380px;
+  height: 380px;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle at center,
+    oklch(0.6 0.25 290 / 0.08),
+    transparent 60%
+  );
+  transform: translate(-50%, -50%);
+  transition: opacity 0.4s ease;
+  will-change: transform;
+}
+.dark .cursor-glow {
+  background: radial-gradient(
+    circle at center,
+    oklch(0.65 0.2 200 / 0.12),
+    transparent 60%
+  );
+}
+@media (hover: none) {
+  .cursor-glow { display: none; }
+}
+
+/* ---------- Marquee tech ticker ---------- */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+}
+.marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.5rem;
+  padding-right: 1.5rem;
+  animation: marquee-scroll 40s linear infinite;
+  will-change: transform;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+/* ---------- Project card cover image ---------- */
+.cover-image-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.875rem;
+  aspect-ratio: 16 / 9;
+}
+.cover-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s ease;
+}
+.cover-image-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 40%,
+    oklch(0.13 0.008 255 / 0.55) 100%
+  );
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.group:hover .cover-image-wrap img {
+  transform: scale(1.06);
+}
+
+/* ---------- Currently building widget ---------- */
+.now-playing-dot {
+  position: relative;
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: oklch(0.7 0.2 150);
+}
+.now-playing-dot::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: oklch(0.7 0.2 150 / 0.4);
+  animation: now-playing-pulse 2s ease-in-out infinite;
+}
+@keyframes now-playing-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ---------- Project nav (prev/next) in drawer ---------- */
+.proj-nav-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.3s ease;
+}
+.proj-nav-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ---------- Hero parallax layer ---------- */
+.parallax-blob {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* ---------- Image skeleton shimmer ---------- */
+@keyframes img-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.img-skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.92 0.004 255 / 0.6) 25%,
+    oklch(0.96 0.004 255 / 0.9) 50%,
+    oklch(0.92 0.004 255 / 0.6) 75%
+  );
+  background-size: 200% 100%;
+  animation: img-shimmer 1.6s ease-in-out infinite;
+}
+.dark .img-skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.01 258 / 0.6) 25%,
+    oklch(0.28 0.01 258 / 0.9) 50%,
+    oklch(0.22 0.01 258 / 0.6) 75%
+  );
+  background-size: 200% 100%;
 }
