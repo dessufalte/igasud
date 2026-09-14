@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
 import { motion } from "framer-motion"
 import { ArrowUpRight, Calendar, FileText, Github } from "lucide-react"
+import { SmartImage } from "@/components/smart-image"
 import type { ProjectSummary } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -52,41 +52,40 @@ export function ProjectCard({ project, index, onOpen, featured }: ProjectCardPro
       {/* Cover image */}
       {project.thumbnail && (
         <div className="relative p-3 pb-0 z-10">
-          <div className="cover-image-wrap">
-            <Image
-              src={project.thumbnail}
-              alt={`${project.title} cover`}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
-              priority={index < 3}
-            />
-            {/* Status + year chips overlay */}
-            <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap z-10">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium backdrop-blur-md",
-                  statusStyles[project.status]
-                )}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                {project.status === "in-progress"
-                  ? "In progress"
-                  : project.status === "shipped"
-                  ? "Shipped"
-                  : "Concept"}
-              </span>
-            </div>
-            <div className="absolute bottom-2 right-2 z-10">
-              <span
-                className="grid h-9 w-9 place-items-center rounded-full text-white shadow-lg transition-transform duration-500 group-hover:rotate-45"
-                style={{
-                  background: `linear-gradient(135deg, ${project.accent}, ${project.accent}cc)`,
-                }}
-              >
-                <ArrowUpRight className="h-4 w-4" />
-              </span>
-            </div>
+          <SmartImage
+            src={project.thumbnail}
+            alt={`${project.title} cover`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            priority={index < 3}
+            wrapperClassName="cover-image-wrap"
+          />
+          {/* Status + year chips overlay */}
+          <div className="absolute top-5 left-5 flex items-center gap-1.5 flex-wrap z-10">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium backdrop-blur-md",
+                statusStyles[project.status]
+              )}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+              {project.status === "in-progress"
+                ? "In progress"
+                : project.status === "shipped"
+                ? "Shipped"
+                : "Concept"}
+            </span>
+          </div>
+          <div className="absolute bottom-5 right-5 z-10">
+            <span
+              className="grid h-9 w-9 place-items-center rounded-full text-white shadow-lg transition-transform duration-500 group-hover:rotate-45"
+              style={{
+                background: `linear-gradient(135deg, ${project.accent}, ${project.accent}cc)`,
+              }}
+            >
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
           </div>
         </div>
       )}

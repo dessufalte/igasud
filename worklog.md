@@ -497,3 +497,79 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Keyboard shortcut: `[` / `]`** to navigate prev/next project within the drawer
 7. **Image lazy-loading polish** — blur placeholder while cover images load
 8. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status
+
+---
+Task ID: 11 (cron round 4)
+Agent: main (webDevReview cron)
+Task: QA + add drawer cover banner, blur placeholder (LQIP), [/] keyboard nav, related projects, doc section transitions, meta chips
+
+## Current project status description/assessment
+Project was stable through round 3 (tasks 0-10). Initial QA pass: zero console errors, zero page errors, dev server healthy. Found gaps from round 3's recommendations: (1) no cover image in doc drawer header; (2) no blur placeholder while images load; (3) no `[`/`]` keyboard nav for prev/next project; (4) no related projects strip. No bugs/blockers.
+
+Decision: stable → focus on **documentation drawer visual polish (cover banner, blur placeholders), navigation efficiency (keyboard shortcuts, related projects), and micro-interaction refinement (section transitions, meta chips)** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Drawer cover banner** in doc drawer header
+   - 11rem (mobile) / 13rem (desktop) hero banner showing the project's cover image above the title
+   - Uses SmartImage with blur-up placeholder, gradient overlay (transparent→dark bottom) for text legibility
+   - Falls back to blur placeholder during loading
+   - Verified: image opacity 1 when loaded, blur opacity 0 (faded out), span has `img-loaded` class
+
+2. **SmartImage component with blur-up placeholder (LQIP)** (`src/components/smart-image.tsx`)
+   - Reusable wrapper around next/image
+   - Shows a blurred gradient backdrop (`.img-blur-placeholder`) until image loads, then fades it out via CSS opacity transition
+   - Handles cached images: checks `imgRef.current?.complete` on mount (fixes images that load before onLoad fires)
+   - Used by both ProjectCard covers and drawer cover banner
+   - Verified: all 9 card covers show `img-loaded`, blur placeholders present and fade out
+
+3. **Keyboard shortcut `[` / `]` for prev/next project** in drawer
+   - `[` navigates to previous project, `]` to next (cyclic, based on `allSlugs` order)
+   - Ignores keypresses when focus is in input/textarea/contentEditable
+   - Verified: Aurora + `]` → Harbor CMS; Harbor CMS + `[` → Aurora
+
+4. **Related projects strip** at drawer bottom
+   - Shows up to 4 projects in the same category as the current project (excluding current)
+   - Pill buttons with accent color dot + title + arrow icon
+   - "More in {category}" label
+   - Clicking navigates to that project's drawer
+   - Verified: Lumen Analytics (Data & Analytics) → shows "Atlas Maps" pill; Aurora (Design Systems, sole project) → no related strip (correct)
+
+5. **Refined meta chips** in drawer header
+   - Category, year, section count now rendered as `.meta-chip` styled pills (compact, subtle bg)
+   - Replaces the previous inline text with dot separators
+
+### Styling improvements
+6. **Doc section transition animation** — `doc-enter` keyframe (fade + translateX 8px → 0, 0.35s cubic-bezier) triggered by `key={activeDoc}` remount on the article element
+7. **Drawer cover banner** — gradient overlay (light + dark variants), object-fit cover, fade-in on load
+8. **Image blur placeholder** — blurred gradient backdrop (violet/cyan in dark mode) with scale(1.1) + blur(20px), fades to opacity 0 when image loads
+9. **Related pill** — hover lift transition (translateY -2px)
+10. **Meta chip** — compact pill styling with subtle background
+
+### Bug fixed during this round
+- **Stale Turbopack CSS cache**: after editing `.drawer-cover-banner.img-loaded img` → `.drawer-cover-banner .img-loaded img` (added space for descendant selector), the compiled CSS in `.next/dev/static/chunks/` still showed the old rule. Required killing dev server (port 3000 held by orphaned process) + `rm -rf .next` + restarting via `.zscripts/dev.sh` (which properly detaches via setsid). After restart, compiled CSS correctly contains `.drawer-cover-banner .img-loaded img { opacity: 1 }`.
+- **SmartImage onLoad not firing for cached images**: next/image from browser cache can be `complete` before React attaches onLoad. Fixed by adding a ref + useEffect that checks `imgRef.current?.complete` on mount and sets `loaded=true` if so.
+- **CSS specificity for drawer banner**: initial rule `.drawer-cover-banner.img-loaded img` targeted the banner div, but `img-loaded` class is on the inner SmartImage span. Fixed by changing to `.drawer-cover-banner .img-loaded img` (descendant selector).
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Drawer cover banner: image opacity 1 when loaded, blur placeholder faded to 0
+- ✅ Card covers: 9/9 show `img-loaded`, blur placeholders present
+- ✅ `[` keyboard: Harbor CMS → Aurora (prev project)
+- ✅ `]` keyboard: Aurora → Harbor CMS (next project)
+- ✅ Related projects: Lumen → "More in Data & Analytics" with Atlas Maps pill; clicking navigates
+- ✅ Doc section transition: `doc-enter` class present on article after section switch
+- ✅ Meta chips: 3 chips (category, year, sections) in drawer header
+- ✅ Mobile (iPhone 14): 9 covers loaded, marquee present, footer at bottom
+- ✅ Dev server: all 200s, lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **OG image as full 1200x630** — currently reuses 64px favicon; generate a proper social preview
+2. **Admin view for messages** — list/read/delete saved contact messages (DB has them, no UI)
+3. **Blog/writing section** — reuse Doc model + markdown rendering for articles
+4. **Page transitions** via Next.js View Transitions API
+5. **Cover image in drawer as parallax** — subtle parallax scroll on the banner
+6. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status
+7. **Reading progress milestones** — celebrate 25%/50%/75%/100% with subtle visual feedback
+8. **Print stylesheet** — clean print view for documentation sections

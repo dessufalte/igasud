@@ -218,6 +218,17 @@ export default function Home() {
     [projects]
   )
 
+  // Related projects: same category as the active project, excluding it
+  const relatedProjects = React.useMemo(() => {
+    if (!activeSlug) return []
+    const active = projects.find((p) => p.slug === activeSlug)
+    if (!active) return []
+    return projects
+      .filter((p) => p.category === active.category && p.slug !== activeSlug)
+      .slice(0, 4)
+      .map((p) => ({ slug: p.slug, title: p.title, accent: p.accent }))
+  }, [activeSlug, projects])
+
   return (
     <div id="top" className="relative min-h-screen flex flex-col">
       <AmbientBackground />
@@ -764,6 +775,7 @@ export default function Home() {
         onClose={() => setActiveSlug(null)}
         allSlugs={allSlugs}
         onNavigate={(slug) => setActiveSlug(slug)}
+        relatedProjects={relatedProjects}
       />
     </div>
   )

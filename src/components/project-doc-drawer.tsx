@@ -9,6 +9,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SmartImage } from "@/components/smart-image"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -34,6 +35,7 @@ import {
   List,
   ChevronLeft,
   ChevronRight,
+  ArrowUpRight,
   type LucideIcon,
 } from "lucide-react"
 import type { ProjectDetail, ProjectDoc } from "@/lib/types"
@@ -58,6 +60,8 @@ interface ProjectDocDrawerProps {
   /** Ordered list of all project slugs (for prev/next navigation). */
   allSlugs: string[]
   onNavigate: (slug: string) => void
+  /** Related projects (same category) to show at the bottom. */
+  relatedProjects: { slug: string; title: string; accent: string }[]
 }
 
 export function ProjectDocDrawer({
@@ -65,6 +69,7 @@ export function ProjectDocDrawer({
   onClose,
   allSlugs,
   onNavigate,
+  relatedProjects,
 }: ProjectDocDrawerProps) {
   const [project, setProject] = React.useState<ProjectDetail | null>(null)
   const [loading, setLoading] = React.useState(false)
@@ -154,6 +159,30 @@ export function ProjectDocDrawer({
       window.history.replaceState(null, "", newHash)
     }
   }, [slug, project, activeDoc])
+
+  // Keyboard navigation: [ = prev project, ] = next project
+  React.useEffect(() => {
+    if (!slug || allSlugs.length === 0) return
+    const onKey = (e: KeyboardEvent) => {
+      // Don't interfere with inputs
+      const t = e.target as HTMLElement
+      if (
+        t.tagName === "INPUT" ||
+        t.tagName === "TEXTAREA" ||
+        t.isContentEditable
+      )
+        return
+      if (e.key === "[" && prevSlug) {
+        e.preventDefault()
+        onNavigate(prevSlug)
+      } else if (e.key === "]" && nextSlug) {
+        e.preventDefault()
+        onNavigate(nextSlug)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [slug, allSlugs, prevSlug, nextSlug, onNavigate])
 
   // Reset scroll + reading progress on doc change. After render, mark the
   // first heading active so the TOC isn't blank at section top.
@@ -276,6 +305,26 @@ export function ProjectDocDrawer({
         side="right"
         className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 gap-0 flex flex-col glass-strong border-l border-t border-b-0 border-r-0"
       >
+        {/* Cover banner */}
+        {!loading && project?.thumbnail && (
+          <div className="drawer-cover-banner shrink-0">
+            <SmartImage
+              src={project.thumbnail}
+              alt={`${project.title} cover`}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+              priority
+              wrapperClassName="absolute inset-0"
+            />
+          </div>
+        )}
+        {(loading || (!project?.thumbnail && project)) && (
+          <div className="drawer-cover-banner shrink-0">
+            <div className="img-blur-placeholder" />
+          </div>
+        )}
+
         {/* Header */}
         <SheetHeader className="px-5 sm:px-7 pt-5 pb-4 border-b border-foreground/8 shrink-0">
           {loading || !project ? (
@@ -287,17 +336,15 @@ export function ProjectDocDrawer({
           ) : (
             <>
               <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
+                <span className="meta-chip">
                   <Tag className="h-3 w-3" />
                   {project.category}
                 </span>
-                <span className="opacity-40">·</span>
-                <span className="inline-flex items-center gap-1">
+                <span className="meta-chip">
                   <Calendar className="h-3 w-3" />
                   {project.year}
                 </span>
-                <span className="opacity-40">·</span>
-                <span className="inline-flex items-center gap-1">
+                <span className="meta-chip">
                   <FileText className="h-3 w-3" />
                   {project.docs.length} sections
                 </span>
@@ -451,7 +498,10 @@ export function ProjectDocDrawer({
                 <Skeleton className="h-32 w-full rounded-xl" />
               </div>
             ) : (
-              <article className="prose-doc max-w-none animate-fade-up">
+              <article
+                key={activeDoc}
+                className="prose-doc max-w-none doc-enter"
+              >
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={markdownComponents}
@@ -513,6 +563,31 @@ export function ProjectDocDrawer({
                       </button>
                     )}
                   </nav>
+                )}
+
+                {/* Related projects (same category) */}
+                {relatedProjects.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-foreground/8" data-related-projects>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-semibold mb-3">
+                      More in {project.category}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {relatedProjects.map((rp) => (
+                        <button
+                          key={rp.slug}
+                          onClick={() => onNavigate(rp.slug)}
+                          className="related-pill inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-foreground/4 hover:bg-foreground/8 border border-foreground/8"
+                        >
+                          <span
+                            className="h-1.5 w-1.5 rounded-full"
+                            style={{ background: rp.accent }}
+                          />
+                          {rp.title}
+                          <ArrowUpRight className="h-3 w-3 opacity-50" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </article>
             )}
