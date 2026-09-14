@@ -35,6 +35,7 @@ import { ScrollUtilities } from "@/components/scroll-utilities"
 import { ShortcutsHelp } from "@/components/shortcuts-help"
 import { CursorGlow } from "@/components/cursor-glow"
 import { TechMarquee } from "@/components/tech-marquee"
+import { AdminPanel } from "@/components/admin-panel"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import type { ProjectSummary } from "@/lib/types"
@@ -77,6 +78,7 @@ export default function Home() {
   const [search, setSearch] = React.useState("")
   const [cmdOpen, setCmdOpen] = React.useState(false)
   const [helpOpen, setHelpOpen] = React.useState(false)
+  const [adminOpen, setAdminOpen] = React.useState(false)
   const [activeSection, setActiveSection] = React.useState<string>("")
 
   React.useEffect(() => {
@@ -114,6 +116,12 @@ export default function Home() {
         setHelpOpen((v) => !v)
         return
       }
+      // `Shift+A` opens admin panel
+      if (e.shiftKey && (e.key === "A" || e.key === "a") && !inField) {
+        e.preventDefault()
+        setAdminOpen((v) => !v)
+        return
+      }
       // `Escape` closes the doc drawer if open (and no other dialog)
       if (
         e.key === "Escape" &&
@@ -130,12 +138,18 @@ export default function Home() {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [cmdOpen, helpOpen, activeSlug])
+  }, [cmdOpen, helpOpen, adminOpen, activeSlug])
 
   // Deep-linking: restore drawer from URL hash on mount + on popstate
   React.useEffect(() => {
     const restore = () => {
       const hash = window.location.hash
+      // Admin panel hash
+      if (hash === "#/admin") {
+        setAdminOpen(true)
+        return
+      }
+      // Project drawer hash
       const m = /^#\/project\/([^/]+)/.exec(hash)
       if (m) {
         const slug = decodeURIComponent(m[1])
@@ -246,6 +260,7 @@ export default function Home() {
         onOpenProject={(slug) => setActiveSlug(slug)}
       />
       <ShortcutsHelp open={helpOpen} onOpenChange={setHelpOpen} />
+      <AdminPanel open={adminOpen} onOpenChange={setAdminOpen} />
 
       <main className="flex-1 pt-24 sm:pt-28">
         {/* ============== HERO ============== */}

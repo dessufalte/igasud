@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SmartImage } from "@/components/smart-image"
+import { ReadingMilestone } from "@/components/reading-milestone"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -78,6 +79,7 @@ export function ProjectDocDrawer({
   const [activeHeading, setActiveHeading] = React.useState<string | null>(null)
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const headingRefs = React.useRef<Map<string, HTMLHeadingElement>>(new Map())
+  const coverRef = React.useRef<HTMLDivElement>(null)
 
   const activeDocObj = project?.docs.find((d) => d.id === activeDoc) ?? null
 
@@ -221,6 +223,12 @@ export function ProjectDocDrawer({
       current = tocItems[0].id
     }
     setActiveHeading(current)
+    // Parallax: translate the cover banner image slightly as content scrolls
+    const coverImg = coverRef.current?.querySelector("img")
+    if (coverImg) {
+      const translateY = el.scrollTop * 0.12
+      coverImg.style.transform = `translateY(${translateY}px) scale(1.05)`
+    }
   }, [tocItems])
 
   // Smooth-scroll a heading into view inside the drawer content
@@ -305,9 +313,11 @@ export function ProjectDocDrawer({
         side="right"
         className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 gap-0 flex flex-col glass-strong border-l border-t border-b-0 border-r-0"
       >
+        {/* Reading milestone celebration */}
+        <ReadingMilestone pct={readingPct} resetKey={activeDoc} />
         {/* Cover banner */}
         {!loading && project?.thumbnail && (
-          <div className="drawer-cover-banner shrink-0">
+          <div ref={coverRef} className="drawer-cover-banner shrink-0">
             <SmartImage
               src={project.thumbnail}
               alt={`${project.title} cover`}

@@ -1064,3 +1064,161 @@ kbd {
   background: oklch(1 0 0 / 0.08);
   color: oklch(0.8 0.005 255);
 }
+
+/* ---------- Reading milestone celebration ---------- */
+.milestone-badge {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  z-index: 100;
+  padding: 1rem 1.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.22 280),
+    oklch(0.6 0.2 200)
+  );
+  box-shadow: 0 20px 60px oklch(0.2 0.04 280 / 0.4);
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.milestone-badge.show {
+  animation: milestone-pop 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes milestone-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  25% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+/* ---------- Confetti particles ---------- */
+.confetti {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 99;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0;
+}
+.confetti-piece.fire {
+  animation: confetti-burst 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes confetti-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.3);
+  }
+}
+
+/* ---------- Drawer cover parallax ---------- */
+.drawer-cover-banner img {
+  will-change: transform;
+}
+
+/* ---------- Admin panel ---------- */
+.admin-table {
+  font-variant-numeric: tabular-nums;
+}
+.admin-row {
+  transition: background 0.2s ease;
+}
+.admin-row:hover {
+  background: oklch(0.5 0.01 255 / 0.04);
+}
+.admin-row.read {
+  opacity: 0.6;
+}
+.dark .admin-row:hover {
+  background: oklch(1 0 0 / 0.04);
+}
+
+/* ---------- Print stylesheet ---------- */
+@media print {
+  .ambient-bg,
+  .cursor-glow,
+  .scroll-progress,
+  .fab-back-to-top,
+  nav,
+  footer,
+  .marquee,
+  .now-playing-dot {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .glass,
+  .glass-strong {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+  .prose-doc {
+    color: black !important;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  .prose-doc h1,
+  .prose-doc h2,
+  .prose-doc h3 {
+    color: black !important;
+    page-break-after: avoid;
+  }
+  .prose-doc pre {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+  }
+  .prose-doc pre code {
+    color: inherit !important;
+  }
+  .prose-doc a {
+    color: #666 !important;
+    text-decoration: underline;
+  }
+  .prose-doc table {
+    page-break-inside: avoid;
+  }
+  .copy-code-btn,
+  .reading-progress,
+  .proj-nav-card,
+  [data-related-projects] {
+    display: none !important;
+  }
+}

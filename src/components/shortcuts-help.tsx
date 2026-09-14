@@ -25,18 +25,17 @@ const GROUPS: { group: string; items: { keys: string[]; label: string }[] }[] = 
     ],
   },
   {
-    group: "Command palette",
+    group: "Documentation drawer",
     items: [
-      { keys: ["↑", "↓"], label: "Move selection" },
-      { keys: ["↵"], label: "Select item" },
+      { keys: ["["], label: "Previous project" },
+      { keys: ["]"], label: "Next project" },
+      { keys: ["Scroll"], label: "Reading progress + cover parallax" },
+      { keys: ["Click"], label: "Copy code / share link buttons" },
     ],
   },
   {
-    group: "Documentation drawer",
-    items: [
-      { keys: ["Scroll"], label: "Reading progress + active heading" },
-      { keys: ["Click"], label: "Copy code / share link buttons" },
-    ],
+    group: "Admin",
+    items: [{ keys: ["Shift", "A"], label: "Open messages inbox" }],
   },
 ]
 

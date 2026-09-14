@@ -573,3 +573,85 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status
 7. **Reading progress milestones** — celebrate 25%/50%/75%/100% with subtle visual feedback
 8. **Print stylesheet** — clean print view for documentation sections
+
+---
+Task ID: 12 (cron round 5)
+Agent: main (webDevReview cron)
+Task: QA + add admin messages panel, reading milestone celebrations, drawer cover parallax, print stylesheet, shortcuts help update
+
+## Current project status description/assessment
+Project was stable through round 4 (tasks 0-11). Initial QA pass: zero console errors, zero page errors, dev server healthy. No bugs found. Identified gaps from round 4's recommendations: (1) no admin UI for messages; (2) no reading milestone celebrations; (3) no drawer cover parallax; (4) no print stylesheet.
+
+Decision: stable → focus on **admin functionality (messages inbox), reader engagement (milestone celebrations + confetti), visual depth (cover parallax), and print support** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Admin messages panel** (`src/components/admin-panel.tsx`)
+   - Glass dialog with split-pane layout: message list (left 40%) + detail view (right 60%)
+   - Triggered by `Shift+A` keyboard shortcut or `#/admin` URL hash
+   - Auto-loads messages on open via `GET /api/admin/messages`
+   - Click a message → marks as read (PATCH `/api/admin/messages/[id]`) + shows detail
+   - Delete button → removes message (DELETE `/api/admin/messages/[id]`) with optimistic update + rollback on failure
+   - Reply button opens `mailto:` with pre-filled subject/body
+   - Unread indicator (emerald dot), read state dimming, refresh button, empty state
+   - Verified: Shift+A opens panel, shows 1 message (QA Tester from round 1), detail view with name/email/body/reply, delete → empty state "No messages yet."
+
+2. **Admin API routes**
+   - `GET /api/admin/messages` — list all messages, ordered by createdAt desc
+   - `PATCH /api/admin/messages/[id]` — update read status (Zod validated)
+   - `DELETE /api/admin/messages/[id]` — delete message
+   - All routes use force-dynamic, proper error handling
+
+3. **Reading milestone celebrations** (`src/components/reading-milestone.tsx`)
+   - Fires at 25% (Quarterway), 50% (Halfway), 75% (Almost there), 100% (Fully read)
+   - Center-screen badge with gradient background + icon + label, 2s pop animation
+   - 24-piece confetti burst (6 colors, radial pattern, random rotation/distance)
+   - Milestones reset on section change (resetKey = activeDoc)
+   - Fixed: initial code only fired one milestone per scroll update (break statement); rewrote to fire all pending milestones and show the highest one's badge
+   - Verified: scroll to 55% → "Halfway — nice progress" badge + 24 confetti pieces; scroll to 100% → "Fully read — nice progress" badge
+
+4. **Drawer cover parallax**
+   - Cover banner image translates Y (0.12× scroll offset) + scale(1.05) as content scrolls
+   - Uses coverRef on the banner div, queries img element for transform
+   - Creates subtle depth effect — image moves slightly slower than content
+   - Verified: scroll 100px → `translateY(12px) scale(1.05)`
+
+5. **Print stylesheet** (`@media print`)
+   - Hides: ambient bg, cursor glow, scroll progress, back-to-top FAB, nav, footer, marquee, now-playing dot, copy-code buttons, reading progress, prev/next nav, related projects
+   - Forces: white background, black text, no backdrop-blur, plain borders on glass elements
+   - Optimizes: 11pt font, 1.5 line-height, page-break-avoid on headings/tables/code blocks
+   - Available when user prints a documentation section (Ctrl+P / Cmd+P)
+
+### Styling improvements
+6. **Milestone badge** — fixed center gradient pill with shadow, pop animation (scale 0.6→1.05→1→0.9 over 2s)
+7. **Confetti** — 24 pieces, 6 colors, radial burst pattern with random rotation/distance/scale, 1.4s animation
+8. **Admin table** — tabular-nums, hover bg, read state dimming (opacity 0.6)
+9. **Print polish** — clean black-on-white print view with proper page breaks
+
+### Shortcuts help updated
+- Added "Documentation drawer" group: `[` Previous project, `]` Next project, Scroll (reading progress + cover parallax), Click (copy code / share link)
+- Added "Admin" group: `Shift+A` Open messages inbox
+- Verified: all new shortcuts visible in help dialog
+
+### Bug fixed during this round
+- **Milestone only firing once per scroll**: initial code used `break` after firing one milestone, so jumping from 30% to 100% only fired 75% (the first unfired milestone), never 100%. Fixed by removing `break`, iterating all milestones, firing all pending ones, and showing only the highest one's badge.
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Admin panel: Shift+A opens, shows messages, detail view with reply button, delete works → empty state
+- ✅ Reading milestone: 50% → "Halfway" badge + 24 confetti; 100% → "Fully read" badge
+- ✅ Cover parallax: scroll 100px → translateY(12px) scale(1.05)
+- ✅ Shortcuts help: all new shortcuts ([, ], Shift+A, cover parallax) documented
+- ✅ Mobile (iPhone 14): footer at bottom, page loads correctly
+- ✅ Dev server: all 200s, lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **OG image as full 1200x630** — currently reuses 64px favicon; generate a proper social preview
+2. **Blog/writing section** — reuse Doc model + markdown rendering for articles
+3. **Page transitions** via Next.js View Transitions API
+4. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status
+5. **Admin auth** — currently open via Shift+A with no auth; add a simple password gate
+6. **Message search/filter** in admin panel (by name, email, unread)
+7. **Export messages** as CSV from admin panel
+8. **Toast on milestone** — add a sonner toast alongside the badge for accessibility
