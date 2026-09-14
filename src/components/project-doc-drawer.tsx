@@ -37,6 +37,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpRight,
+  Twitter,
+  Linkedin,
+  Link2,
   type LucideIcon,
 } from "lucide-react"
 import type { ProjectDetail, ProjectDoc } from "@/lib/types"
@@ -392,6 +395,13 @@ export function ProjectDocDrawer({
                     Live demo
                   </a>
                 )}
+                {/* Share buttons */}
+                <div className="flex items-center gap-1 ml-auto">
+                  <ShareButtons
+                    title={project.title}
+                    accent={project.accent}
+                  />
+                </div>
               </div>
             </>
           )}
@@ -401,6 +411,28 @@ export function ProjectDocDrawer({
         <div className="flex-1 min-h-0 flex">
           {/* Section nav + TOC */}
           <aside className="hidden sm:flex flex-col gap-1 w-52 lg:w-64 p-3 border-r border-foreground/8 shrink-0 overflow-y-auto thin-scroll">
+            {/* Reading overview */}
+            {!loading && project && (
+              <div className="px-2 pt-1 pb-3 mb-1 border-b border-foreground/8">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                    Reading progress
+                  </span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    {Math.round(readingPct)}%
+                  </span>
+                </div>
+                <div className="reading-overview-bar">
+                  <div
+                    className="reading-overview-fill"
+                    style={{ width: `${readingPct}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-1.5">
+                  {readingMinutes} min · {project.docs.length} sections
+                </p>
+              </div>
+            )}
             <p className="px-2 pt-1 pb-2 text-[11px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
               Documentation
             </p>
@@ -794,4 +826,84 @@ function formatSlug(slug: string): string {
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ")
+}
+
+// ---------- Share buttons ----------
+function ShareButtons({
+  title,
+  accent,
+}: {
+  title: string
+  accent: string
+}) {
+  const [copied, setCopied] = React.useState(false)
+  const tRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  React.useEffect(
+    () => () => {
+      if (tRef.current) clearTimeout(tRef.current)
+    },
+    []
+  )
+
+  const url =
+    typeof window !== "undefined" ? window.location.href : ""
+  const text = `Check out ${title} — a project on my portfolio.`
+
+  const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+    text
+  )}&url=${encodeURIComponent(url)}`
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+    url
+  )}`
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      if (tRef.current) clearTimeout(tRef.current)
+      tRef.current = setTimeout(() => setCopied(false), 1600)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <a
+        href={tweetUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Share on Twitter"
+        title="Share on Twitter"
+        className="share-btn"
+        style={copied ? undefined : undefined}
+      >
+        <Twitter className="h-3.5 w-3.5" />
+      </a>
+      <a
+        href={linkedinUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Share on LinkedIn"
+        title="Share on LinkedIn"
+        className="share-btn"
+      >
+        <Linkedin className="h-3.5 w-3.5" />
+      </a>
+      <button
+        onClick={onCopy}
+        aria-label="Copy link"
+        title="Copy link"
+        className="share-btn"
+        style={copied ? { color: "oklch(0.7 0.18 150)" } : undefined}
+        type="button"
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <Link2 className="h-3.5 w-3.5" />
+        )}
+      </button>
+    </div>
+  )
 }

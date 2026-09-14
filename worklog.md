@@ -655,3 +655,68 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Message search/filter** in admin panel (by name, email, unread)
 7. **Export messages** as CSV from admin panel
 8. **Toast on milestone** — add a sonner toast alongside the badge for accessibility
+
+---
+Task ID: 13 (cron round 6)
+Agent: main (webDevReview cron)
+Task: QA + add grid/list view toggle, sort dropdown, share buttons, drawer reading overview sidebar
+
+## Current project status description/assessment
+Project was stable through round 5 (tasks 0-12). Initial QA pass: zero console errors, zero page errors, dev server healthy. No bugs found. Identified gaps: (1) no view toggle for grid/list; (2) no sort control; (3) no share buttons in drawer; (4) no reading overview in sidebar.
+
+Decision: stable → focus on **project browsing flexibility (view toggle + sort), social sharing, and drawer sidebar information density** per mandatory styling+feature requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Grid/List view toggle** for projects
+   - New `ProjectListCard` component (`src/components/project-list-card.tsx`) — horizontal card with cover thumbnail (6rem mobile / 8rem desktop), status chip + year + category, title, tagline, tech stack chips (3), arrow button + doc count
+   - View toggle control (LayoutGrid / List icons) in Work section controls row, persists during session
+   - `view-toggle` segmented control styling with active state (bg + shadow)
+   - Verified: switching to list → 6 list cards render, first "Lumen Analytics" (featured sort), toggle shows "List view" active
+
+2. **Sort dropdown** (Featured first / Newest / Oldest / A–Z / Status)
+   - Native `<select>` with custom chevron SVG background, glass styling
+   - `filtered` memo now applies sort after category + search filtering
+   - Status sort: in-progress → shipped → concept
+   - Verified: A–Z → Atlas, Aurora, Driftwood, Harbor, Lumen, Prism; Newest → 2024 projects first (Lumen, Aurora, Prism)
+
+3. **Share buttons** in drawer header
+   - Twitter (intent/tweet with project title + URL), LinkedIn (share-offsite with URL), Copy link (clipboard with green check feedback)
+   - `share-btn` styling: compact 2rem squares, hover lift + bg change
+   - `ShareButtons` component with clipboard state
+   - Verified: 3 share buttons present, copy link → button turns green + check icon, Twitter URL correct with title
+
+4. **Reading overview** in drawer sidebar
+   - Compact panel at top of sidebar: "Reading progress" label + live % + gradient progress bar + "X min · Y sections" meta
+   - `reading-overview-bar` + `reading-overview-fill` CSS, gradient fill animates with width
+   - Updates live as user scrolls content
+   - Verified: scroll to 200px → bar fills to 27.9%, % text shows "28%"
+
+### Styling improvements
+5. **List card layout** — horizontal flex with thumbnail + body + right meta, hover translateX(4px)
+6. **View toggle** — segmented control with active bg + shadow
+7. **Sort select** — custom chevron, glass bg, focus ring
+8. **Share buttons** — compact squares, hover lift + bg, green on copy
+9. **Reading overview bar** — 3px gradient fill, smooth width transition
+10. **Controls row** — sort + result count + view toggle grouped cleanly with justify-between
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ View toggle: grid → list switches 6 cards, toggle active state updates
+- ✅ Sort A–Z: alphabetical order (Atlas → Prism)
+- ✅ Sort Newest: 2024 projects first
+- ✅ Share buttons: 3 present (Twitter/LinkedIn/Copy), copy → green check feedback, Twitter URL correct
+- ✅ Reading overview: bar fills to 27.9% on scroll, % text updates live
+- ✅ Mobile (iPhone 14): all features present, grid view default, 9 covers, footer at bottom
+- ✅ Dev server: all 200s, lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **OG image as full 1200x630** — currently reuses 64px favicon; generate a proper social preview
+2. **Blog/writing section** — reuse Doc model + markdown rendering for articles
+3. **Page transitions** via Next.js View Transitions API
+4. **"Now playing" real data** — wire the currently-building widget to an actual in-progress project's status
+5. **Admin auth** — currently open via Shift+A with no auth; add a simple password gate
+6. **Message search/filter** in admin panel (by name, email, unread)
+7. **Export messages** as CSV from admin panel
+8. **List view persistence** — save view/sort preference to localStorage

@@ -25,10 +25,13 @@ import {
   Check,
   Keyboard,
   Quote,
+  LayoutGrid,
+  List as ListIcon,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { AmbientBackground } from "@/components/ambient-background"
 import { ProjectCard } from "@/components/project-card"
+import { ProjectListCard } from "@/components/project-list-card"
 import { ProjectDocDrawer } from "@/components/project-doc-drawer"
 import { CommandPalette } from "@/components/command-palette"
 import { ScrollUtilities } from "@/components/scroll-utilities"
@@ -80,6 +83,8 @@ export default function Home() {
   const [helpOpen, setHelpOpen] = React.useState(false)
   const [adminOpen, setAdminOpen] = React.useState(false)
   const [activeSection, setActiveSection] = React.useState<string>("")
+  const [view, setView] = React.useState<"grid" | "list">("grid")
+  const [sortBy, setSortBy] = React.useState<"featured" | "year-desc" | "year-asc" | "name" | "status">("featured")
 
   React.useEffect(() => {
     fetch("/api/projects")
@@ -207,16 +212,49 @@ export default function Home() {
       activeCategory === "All"
         ? projects
         : projects.filter((p) => p.category === activeCategory)
-    if (!q) return byCategory
-    return byCategory.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.tagline.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.techStack.some((t) => t.toLowerCase().includes(q))
-    )
-  }, [projects, activeCategory, search])
+    const bySearch = !q
+      ? byCategory
+      : byCategory.filter(
+          (p) =>
+            p.title.toLowerCase().includes(q) ||
+            p.tagline.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            p.category.toLowerCase().includes(q) ||
+            p.techStack.some((t) => t.toLowerCase().includes(q))
+        )
+    // Sort
+    const statusOrder: Record<string, number> = {
+      "in-progress": 0,
+      shipped: 1,
+      concept: 2,
+    }
+    const sorted = [...bySearch]
+    switch (sortBy) {
+      case "year-desc":
+        sorted.sort((a, b) => b.year - a.year)
+        break
+      case "year-asc":
+        sorted.sort((a, b) => a.year - b.year)
+        break
+      case "name":
+        sorted.sort((a, b) => a.title.localeCompare(b.title))
+        break
+      case "status":
+        sorted.sort(
+          (a, b) =>
+            (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)
+        )
+        break
+      case "featured":
+      default:
+        sorted.sort(
+          (a, b) =>
+            Number(b.featured) - Number(a.featured) || b.year - a.year
+        )
+        break
+    }
+    return sorted
+  }, [projects, activeCategory, search, sortBy])
 
   const featured = React.useMemo(
     () => projects.filter((p) => p.featured).slice(0, 3),
@@ -469,30 +507,84 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Result count */}
-            {!loading && (
-              <p className="mt-4 text-xs text-muted-foreground">
-                {filtered.length} {filtered.length === 1 ? "project" : "projects"}
-                {activeCategory !== "All" ? ` in ${activeCategory}` : ""}
-                {search ? ` matching “${search}”` : ""}
-              </p>
-            )}
-
-            {/* Grid */}
-            <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-              {loading
-                ? Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-64 rounded-2xl" />
-                  ))
-                : filtered.map((p, i) => (
-                    <ProjectCard
-                      key={p.id}
-                      project={p}
-                      index={i}
-                      onOpen={setActiveSlug}
-                    />
-                  ))}
+            {/* Controls row: sort + view toggle + result count */}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Sort</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  aria-label="Sort projects"
+                  className="sort-select h-8 px-3 rounded-lg bg-foreground/4 border border-foreground/8 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/15 transition-all"
+                >
+                  <option value="featured">Featured first</option>
+                  <option value="year-desc">Newest</option>
+                  <option value="year-asc">Oldest</option>
+                  <option value="name">A–Z</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-3">
+                {!loading && (
+                  <p className="text-xs text-muted-foreground">
+                    {filtered.length} {filtered.length === 1 ? "project" : "projects"}
+                    {activeCategory !== "All" ? ` in ${activeCategory}` : ""}
+                    {search ? ` matching “${search}”` : ""}
+                  </p>
+                )}
+                <div className="view-toggle" role="group" aria-label="View mode">
+                  <button
+                    onClick={() => setView("grid")}
+                    data-active={view === "grid"}
+                    aria-label="Grid view"
+                    className="view-toggle-btn"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setView("list")}
+                    data-active={view === "list"}
+                    aria-label="List view"
+                    className="view-toggle-btn"
+                  >
+                    <ListIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {/* Grid or List */}
+            {view === "grid" ? (
+              <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+                {loading
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                      <Skeleton key={i} className="h-64 rounded-2xl" />
+                    ))
+                  : filtered.map((p, i) => (
+                      <ProjectCard
+                        key={p.id}
+                        project={p}
+                        index={i}
+                        onOpen={setActiveSlug}
+                      />
+                    ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2.5 mt-6" data-view="list">
+                {loading
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                      <Skeleton key={i} className="h-20 rounded-2xl" />
+                    ))
+                  : filtered.map((p, i) => (
+                      <ProjectListCard
+                        key={p.id}
+                        project={p}
+                        index={i}
+                        onOpen={setActiveSlug}
+                      />
+                    ))}
+              </div>
+            )}
 
             {!loading && filtered.length === 0 && (
               <div className="text-center py-16">
