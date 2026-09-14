@@ -443,3 +443,214 @@
 .animate-float-slower {
   animation: float-slower 24s ease-in-out infinite;
 }
+
+/* ---------- Focus-visible ring (polished, accessible) ---------- */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px oklch(0.55 0.2 280 / 0.55);
+  border-radius: inherit;
+  transition: box-shadow 0.18s ease;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: none;
+}
+
+/* ---------- Page scroll progress bar ---------- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  z-index: 60;
+  background: linear-gradient(
+    90deg,
+    oklch(0.6 0.25 290),
+    oklch(0.65 0.2 200),
+    oklch(0.72 0.22 150)
+  );
+  box-shadow: 0 0 12px oklch(0.6 0.25 290 / 0.5);
+  will-change: width;
+  transition: width 0.1s linear;
+}
+
+/* ---------- Back-to-top FAB ---------- */
+.fab-back-to-top {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 40;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  glass-effect-composite: strict;
+}
+@media (min-width: 640px) {
+  .fab-back-to-top {
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* ---------- Gradient border (featured cards) ---------- */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.6 0.25 290 / 0.5),
+    oklch(0.65 0.2 200 / 0.3),
+    transparent 60%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ---------- Animated section divider ---------- */
+.section-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border),
+    transparent
+  );
+  overflow: hidden;
+}
+.section-divider::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(0.6 0.25 290 / 0.6),
+    transparent
+  );
+  animation: shimmer 6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%, 100% { left: -30%; }
+  50% { left: 100%; }
+}
+
+/* ---------- Reading progress (in drawer) ---------- */
+.reading-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    oklch(0.6 0.25 290),
+    oklch(0.65 0.2 200)
+  );
+  transition: width 0.1s linear;
+  z-index: 5;
+}
+
+/* ---------- Copy code button ---------- */
+.copy-code-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-family: var(--font-sans);
+  color: oklch(0.8 0.005 255);
+  background: oklch(1 0 0 / 0.08);
+  border: 1px solid oklch(1 0 0 / 0.1);
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.prose-doc pre:hover .copy-code-btn,
+.copy-code-btn:focus-visible {
+  opacity: 1;
+}
+.copy-code-btn:hover {
+  background: oklch(1 0 0 / 0.16);
+}
+.copy-code-btn.copied {
+  color: oklch(0.7 0.18 150);
+  opacity: 1;
+}
+.prose-doc pre {
+  position: relative;
+}
+
+/* ---------- Card tilt on hover (subtle 3D) ---------- */
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tilt-card:hover {
+  transform: perspective(1000px) rotateX(1.5deg) rotateY(-1.5deg) translateY(-4px);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Command palette ---------- */
+.cmdk-overlay {
+  backdrop-filter: blur(8px);
+}
+.cmdk-item[data-selected="true"] {
+  background: oklch(0.55 0.2 280 / 0.12);
+}
+
+/* ---------- Kbd badge ---------- */
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+  background: oklch(0.5 0.01 255 / 0.12);
+  border: 1px solid oklch(0.5 0.01 255 / 0.15);
+  color: var(--foreground);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  min-width: 1.1rem;
+  justify-content: center;
+}
+
+/* ---------- Tag pill animated entry ---------- */
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.9); }
+  60% { transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in {
+  animation: pop-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

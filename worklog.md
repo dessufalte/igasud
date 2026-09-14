@@ -193,3 +193,91 @@ No blocking issues. Recommended next-step enhancements for the recurring webDevR
 6. Add "copy code" button on code blocks in docs
 7. Add favicon + OG image
 8. Consider adding a blog/writing section
+
+---
+Task ID: 8 (cron round 1)
+Agent: main (webDevReview cron)
+Task: QA current site + add features (Cmd+K palette, project search, copy-code, reading progress, contact backend) + richer styling
+
+## Current project status description/assessment
+Baseline was stable (from tasks 0-7): minimalist Apple-style portfolio with glassmorphism, 6 seeded projects, documentation drawer, sticky footer, theme toggle — all verified working on desktop + mobile. No bugs found in initial QA pass (agent-browser: zero console errors, zero page errors, a11y baseline clean: 1 h1, 5 h2, 0 buttons without labels, 0 images without alt, 33 focusable elements). Dev server healthy, lint clean.
+
+Decision: project was stable → focus on **adding high-value features + richer styling details** per the mandatory requirements.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Cmd+K command palette** (`src/components/command-palette.tsx`)
+   - Global ⌘K / Ctrl+K keyboard shortcut + `/` shortcut
+   - Searchable, grouped results: Navigate (5 anchors), Projects (6), Actions (copy email, open GitHub, scroll to top)
+   - Navbar trigger button with ⌘K kbd badge (desktop) + Command icon (mobile)
+   - Uses cmdk library + Dialog, polished glass styling, keyboard nav (↑↓↵), Esc to close
+   - Verified: opens via keyboard, filters by "aurora", selecting opens project drawer
+
+2. **Project text search** (in Work section)
+   - Search input with icon + clear (X) button
+   - Searches title, tagline, description, category, and techStack
+   - Live result count text ("2 projects matching 'react'")
+   - Empty state with reset-filters button
+   - Composes with category filter (AND logic)
+   - Verified: "react" → 2 projects (Aurora, Prism Motion); clear button restores all 6
+
+3. **Copy code button** on doc code blocks
+   - Appears on hover (opacity transition) inside the drawer's markdown code blocks
+   - Uses navigator.clipboard, shows "Copied" with check icon for 1.8s
+   - Verified: button ref found, click → text changes to "Copied"
+
+4. **Reading progress bar** in doc drawer
+   - Tracks scroll within the content container (not the window)
+   - Gradient fill at bottom of content area, resets on section change
+   - Verified: scroll to 300/455 → progress shows 65.9%
+
+5. **Reading time estimate** per doc section (words/220 wpm, min 1)
+
+6. **Next section button** at bottom of each doc section + section counter ("Section 2 of 4")
+
+7. **Contact form backend persistence**
+   - New Prisma `Message` model (name, email, body, read, createdAt) → `bun run db:push`
+   - POST `/api/contact` route with Zod validation (name 2-80, email, message 10-2000) + in-memory rate limiting (3/min per IP)
+   - Frontend: real fetch POST, loading spinner, success/error toast, error alert
+   - Verified: valid submission → 200, persisted to DB (confirmed via Prisma query); invalid → 422 with "Name must be at least 2 characters"
+
+### Styling improvements
+8. **Page scroll progress bar** — fixed top gradient bar tracking page scroll (verified 0%→53%→100%)
+9. **Back-to-top FAB** — appears after 600px scroll, glass circle with arrow, smooth scroll on click (verified: present after scroll, hidden at top, click → scrollY=0)
+10. **Gradient borders** on featured project cards (CSS mask technique)
+11. **Card tilt micro-interaction** — subtle 3D perspective rotateX/Y on hover
+12. **Animated section dividers** — 4 shimmer dividers between sections (gradient sweep animation)
+13. **Polished focus-visible rings** — accessible 2-layer ring (white gap + violet) replacing browser default
+14. **Reduced motion support** — `@media (prefers-reduced-motion: reduce)` disables animations
+15. **Kbd badge styling** — monospace key caps for shortcuts
+16. **Pop-in animation** for filter pills
+17. **Loading spinner** in contact button (replaces text-only "Sending…")
+18. **Better empty state** for project search (icon + reset button)
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Cmd+K opens palette, search filters, selecting opens drawer
+- ✅ Project search "react" → 2 results, clear button restores 6
+- ✅ Copy code button: hover → visible, click → "Copied"
+- ✅ Reading progress: scroll content → 65.9%
+- ✅ Contact form: valid → 200 + DB persisted (confirmed via Prisma query), invalid → 422 + error alert
+- ✅ Scroll progress bar: 0% at top → 53% at 2000px → 100% at bottom
+- ✅ Back-to-top FAB: hidden at top, appears after 600px, click → smooth scroll to top
+- ✅ 4 section dividers present
+- ✅ ⌘K kbd badge in navbar (desktop), Command icon button (mobile)
+- ✅ Mobile: command palette opens via navbar button, all features present
+- ✅ Dev server: all 200s, only expected 422 for invalid form, zero runtime errors
+- ✅ Lint clean
+
+Note: Had to restart dev server after adding Message model (stale Prisma Client singleton in `globalThis.prisma`). Used `.zscripts/dev.sh` to restart properly. Server now running as PID 6616.
+
+## Unresolved issues or risks, and priority recommendations for next phase
+No blocking issues. All features working. Recommended next-step enhancements:
+1. **Admin view for messages** — list/read/delete saved contact messages (currently only in DB)
+2. **Project cover images** — generate via Image-Generation skill, store thumbnail field (already in schema)
+3. **Table of contents** within long doc sections (auto-generated from h2 headings)
+4. **Favicon + OG image** — currently missing, easy add
+5. **Keyboard shortcut help** — `?` to show all shortcuts
+6. **Deep-linking** — URL hash for open project + active section (e.g. #/project/aurora/architecture) so docs are shareable
+7. **Blog/writing section** — reuse the Doc model + markdown rendering
+8. **Page transitions** with Next.js View Transitions API for route-level polish

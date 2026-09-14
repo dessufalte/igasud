@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
-import { Moon, Sun, Github, Menu, X } from "lucide-react"
+import { Moon, Sun, Github, Menu, X, Command } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
@@ -13,7 +13,11 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ]
 
-export function Navbar() {
+export function Navbar({
+  onOpenCommand,
+}: {
+  onOpenCommand: () => void
+}) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
@@ -73,6 +77,24 @@ export function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
+            {/* Command palette trigger */}
+            <button
+              onClick={onOpenCommand}
+              className="hidden sm:flex items-center gap-2 h-9 pl-3 pr-2 rounded-full text-xs text-muted-foreground hover:text-foreground bg-foreground/4 hover:bg-foreground/8 border border-foreground/8 transition-colors"
+              aria-label="Open command palette"
+            >
+              <Search />
+              <span className="hidden lg:inline">Search</span>
+              <kbd className="ml-1">⌘K</kbd>
+            </button>
+            <button
+              onClick={onOpenCommand}
+              className="sm:hidden grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+              aria-label="Open command palette"
+            >
+              <Command className="h-4 w-4" />
+            </button>
+
             <a
               href="https://github.com"
               target="_blank"
@@ -123,5 +145,25 @@ export function Navbar() {
         )}
       </nav>
     </header>
+  )
+}
+
+function Search() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
   )
 }

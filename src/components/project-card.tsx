@@ -10,6 +10,7 @@ interface ProjectCardProps {
   project: ProjectSummary
   index: number
   onOpen: (slug: string) => void
+  featured?: boolean
 }
 
 const statusStyles: Record<string, string> = {
@@ -18,7 +19,7 @@ const statusStyles: Record<string, string> = {
   concept: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
 }
 
-export function ProjectCard({ project, index, onOpen }: ProjectCardProps) {
+export function ProjectCard({ project, index, onOpen, featured }: ProjectCardProps) {
   return (
     <motion.button
       layout
@@ -33,10 +34,12 @@ export function ProjectCard({ project, index, onOpen }: ProjectCardProps) {
       onClick={() => onOpen(project.slug)}
       className={cn(
         "group relative text-left w-full overflow-hidden",
-        "rounded-2xl glass glass-sheen glass-hover",
+        "rounded-2xl glass glass-sheen glass-hover tilt-card",
+        featured && "gradient-border",
         "p-5 sm:p-6 flex flex-col gap-4"
       )}
       style={{ minHeight: "16rem" }}
+      aria-label={`Open documentation for ${project.title}`}
     >
       {/* Accent glow */}
       <div

@@ -9,7 +9,6 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -29,6 +28,9 @@ import {
   ExternalLink,
   Calendar,
   Tag,
+  Check,
+  Copy,
+  Clock,
   type LucideIcon,
 } from "lucide-react"
 import type { ProjectDetail, ProjectDoc } from "@/lib/types"
@@ -56,6 +58,7 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
   const [project, setProject] = React.useState<ProjectDetail | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [activeDoc, setActiveDoc] = React.useState<string | null>(null)
+  const [readingPct, setReadingPct] = React.useState(0)
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
@@ -76,12 +79,27 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
       .finally(() => setLoading(false))
   }, [slug])
 
-  // Reset scroll on doc change
+  // Reset scroll + reading progress on doc change
   React.useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0
+    setReadingPct(0)
   }, [activeDoc])
 
+  // Track reading progress
+  const onContentScroll = React.useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const max = el.scrollHeight - el.clientHeight
+    const pct = max > 0 ? Math.min(100, Math.max(0, (el.scrollTop / max) * 100)) : 0
+    setReadingPct(pct)
+  }, [])
+
   const activeDocObj = project?.docs.find((d) => d.id === activeDoc) ?? null
+
+  // Reading time estimate (words / 220 wpm)
+  const readingMinutes = activeDocObj
+    ? Math.max(1, Math.round(activeDocObj.content.split(/\s+/).length / 220))
+    : 0
 
   return (
     <Sheet open={!!slug} onOpenChange={(o) => !o && onClose()}>
@@ -205,8 +223,26 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
           {/* Markdown content */}
           <div
             ref={scrollRef}
-            className="flex-1 min-w-0 overflow-y-auto thin-scroll px-5 sm:px-7 py-6 sm:py-8"
+            onScroll={onContentScroll}
+            className="relative flex-1 min-w-0 overflow-y-auto thin-scroll px-5 sm:px-7 py-6 sm:py-8"
           >
+            {/* Reading progress bar */}
+            <div
+              className="reading-progress"
+              style={{ width: `${readingPct}%` }}
+              aria-hidden="true"
+            />
+
+            {/* Section meta (reading time) */}
+            {!loading && activeDocObj && (
+              <div className="mb-4 flex items-center gap-2 text-[11px] text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                <span>{readingMinutes} min read</span>
+                <span className="opacity-40">·</span>
+                <span>{activeDocObj.section}</span>
+              </div>
+            )}
+
             {loading || !activeDocObj ? (
               <div className="space-y-3">
                 <Skeleton className="h-8 w-2/3" />
@@ -222,7 +258,8 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
                   components={{
                     code({ className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || "")
-                      const isInline = !match && !String(children).includes("\n")
+                      const raw = String(children).replace(/\n$/, "")
+                      const isInline = !match && !raw.includes("\n")
                       if (isInline) {
                         return (
                           <code className={className} {...props}>
@@ -231,25 +268,47 @@ export function ProjectDocDrawer({ slug, onClose }: ProjectDocDrawerProps) {
                         )
                       }
                       return (
-                        <SyntaxHighlighter
-                          // @ts-expect-error - style prop typing
-                          style={oneDark}
-                          language={match?.[1] ?? "text"}
-                          PreTag="div"
-                          customStyle={{
-                            margin: 0,
-                            background: "transparent",
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {String(children).replace(/\n$/, "")}
-                        </SyntaxHighlighter>
+                        <div className="relative group/code">
+                          <CopyCodeButton code={raw} />
+                          <SyntaxHighlighter
+                            // @ts-expect-error - style prop typing
+                            style={oneDark}
+                            language={match?.[1] ?? "text"}
+                            PreTag="div"
+                            customStyle={{
+                              margin: 0,
+                              background: "transparent",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {raw}
+                          </SyntaxHighlighter>
+                        </div>
                       )
                     },
                   }}
                 >
                   {activeDocObj.content}
                 </ReactMarkdown>
+
+                {/* Section footer */}
+                <div className="mt-10 pt-6 border-t border-foreground/8 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span>
+                    Section {project.docs.findIndex((d) => d.id === activeDoc) + 1} of{" "}
+                    {project.docs.length}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const idx = project.docs.findIndex((d) => d.id === activeDoc)
+                      const next = project.docs[(idx + 1) % project.docs.length]
+                      if (next) setActiveDoc(next.id)
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-colors font-medium text-foreground"
+                  >
+                    Next section
+                    <ExternalLink className="h-3 w-3" />
+                  </button>
+                </div>
               </article>
             )}
           </div>
@@ -324,5 +383,50 @@ function MobileSectionSelect({
         </div>
       )}
     </div>
+  )
+}
+
+function CopyCodeButton({ code }: { code: string }) {
+  const [copied, setCopied] = React.useState(false)
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  React.useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+  }, [])
+
+  const onCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      timeoutRef.current = setTimeout(() => setCopied(false), 1800)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <button
+      onClick={onCopy}
+      aria-label={copied ? "Copied" : "Copy code"}
+      className={cn(
+        "copy-code-btn group-hover/code:opacity-100",
+        copied && "copied"
+      )}
+      type="button"
+    >
+      {copied ? (
+        <>
+          <Check className="h-3 w-3" />
+          Copied
+        </>
+      ) : (
+        <>
+          <Copy className="h-3 w-3" />
+          Copy
+        </>
+      )}
+    </button>
   )
 }

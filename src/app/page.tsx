@@ -20,11 +20,16 @@ import {
   GitBranch,
   Send,
   Heart,
+  Search as SearchIcon,
+  X,
+  Check,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { AmbientBackground } from "@/components/ambient-background"
 import { ProjectCard } from "@/components/project-card"
 import { ProjectDocDrawer } from "@/components/project-doc-drawer"
+import { CommandPalette } from "@/components/command-palette"
+import { ScrollUtilities } from "@/components/scroll-utilities"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import type { ProjectSummary } from "@/lib/types"
@@ -62,6 +67,8 @@ export default function Home() {
   const [activeCategory, setActiveCategory] =
     React.useState<(typeof CATEGORIES)[number]>("All")
   const [activeSlug, setActiveSlug] = React.useState<string | null>(null)
+  const [search, setSearch] = React.useState("")
+  const [cmdOpen, setCmdOpen] = React.useState(false)
 
   React.useEffect(() => {
     fetch("/api/projects")
@@ -71,10 +78,42 @@ export default function Home() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Global Cmd+K / Ctrl+K shortcut
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        setCmdOpen((v) => !v)
+      }
+      if (e.key === "/" && !cmdOpen) {
+        const t = e.target as HTMLElement
+        const tag = t.tagName
+        if (tag !== "INPUT" && tag !== "TEXTAREA" && !t.isContentEditable) {
+          e.preventDefault()
+          setCmdOpen(true)
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [cmdOpen])
+
   const filtered = React.useMemo(() => {
-    if (activeCategory === "All") return projects
-    return projects.filter((p) => p.category === activeCategory)
-  }, [projects, activeCategory])
+    const q = search.trim().toLowerCase()
+    const byCategory =
+      activeCategory === "All"
+        ? projects
+        : projects.filter((p) => p.category === activeCategory)
+    if (!q) return byCategory
+    return byCategory.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.tagline.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.techStack.some((t) => t.toLowerCase().includes(q))
+    )
+  }, [projects, activeCategory, search])
 
   const featured = React.useMemo(
     () => projects.filter((p) => p.featured).slice(0, 3),
@@ -84,7 +123,14 @@ export default function Home() {
   return (
     <div id="top" className="relative min-h-screen flex flex-col">
       <AmbientBackground />
-      <Navbar />
+      <ScrollUtilities />
+      <Navbar onOpenCommand={() => setCmdOpen(true)} />
+      <CommandPalette
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        projects={projects}
+        onOpenProject={(slug) => setActiveSlug(slug)}
+      />
 
       <main className="flex-1 pt-24 sm:pt-28">
         {/* ============== HERO ============== */}
@@ -189,6 +235,7 @@ export default function Home() {
                     project={p}
                     index={i}
                     onOpen={setActiveSlug}
+                    featured
                   />
                 ))}
               </div>
@@ -196,35 +243,70 @@ export default function Home() {
           </section>
         )}
 
+        {/* Divider */}
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 sm:pt-28">
+          <div className="section-divider rounded-full" />
+        </div>
+
         {/* ============== WORK / ALL PROJECTS ============== */}
         <section id="work" className="px-4 sm:px-6 pt-20 sm:pt-28 scroll-mt-24">
           <div className="mx-auto max-w-6xl">
             <SectionHeader
               eyebrow="The archive"
               title="All projects"
-              description="Filter by domain. Every card opens a documentation panel with architecture, features, and roadmap."
+              description="Filter by domain or search by name, tech, or keyword. Every card opens a documentation panel."
             />
 
-            {/* Filter pills */}
-            <div className="mt-8 flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setActiveCategory(c)}
-                  className={cn(
-                    "px-3.5 py-1.5 rounded-full text-sm font-medium transition-all",
-                    activeCategory === c
-                      ? "bg-foreground text-background shadow-sm"
-                      : "bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground border border-foreground/8"
-                  )}
-                >
-                  {c}
-                </button>
-              ))}
+            {/* Filter + search bar */}
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setActiveCategory(c)}
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-full text-sm font-medium transition-all animate-pop-in",
+                      activeCategory === c
+                        ? "bg-foreground text-background shadow-sm"
+                        : "bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground border border-foreground/8"
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+              <div className="relative sm:ml-auto sm:w-72">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search projects…"
+                  aria-label="Search projects"
+                  className="w-full h-9 pl-9 pr-9 rounded-full bg-foreground/4 border border-foreground/8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:bg-foreground/6 transition-all"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 grid h-5 w-5 place-items-center rounded-full hover:bg-foreground/10 text-muted-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
             </div>
 
+            {/* Result count */}
+            {!loading && (
+              <p className="mt-4 text-xs text-muted-foreground">
+                {filtered.length} {filtered.length === 1 ? "project" : "projects"}
+                {activeCategory !== "All" ? ` in ${activeCategory}` : ""}
+                {search ? ` matching “${search}”` : ""}
+              </p>
+            )}
+
             {/* Grid */}
-            <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+            <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-6">
               {loading
                 ? Array.from({ length: 6 }).map((_, i) => (
                     <Skeleton key={i} className="h-64 rounded-2xl" />
@@ -240,12 +322,31 @@ export default function Home() {
             </div>
 
             {!loading && filtered.length === 0 && (
-              <div className="text-center py-16 text-muted-foreground">
-                No projects in this category yet.
+              <div className="text-center py-16">
+                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-foreground/5 text-muted-foreground">
+                  <SearchIcon className="h-5 w-5" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  No projects match your filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearch("")
+                    setActiveCategory("All")
+                  }}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-foreground/5 hover:bg-foreground/10 transition-colors"
+                >
+                  Reset filters
+                </button>
               </div>
             )}
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 sm:pt-28">
+          <div className="section-divider rounded-full" />
+        </div>
 
         {/* ============== ABOUT ============== */}
         <section id="about" className="px-4 sm:px-6 pt-20 sm:pt-28 scroll-mt-24">
@@ -339,6 +440,11 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 sm:pt-28">
+          <div className="section-divider rounded-full" />
+        </div>
+
         {/* ============== SKILLS ============== */}
         <section id="skills" className="px-4 sm:px-6 pt-20 sm:pt-28 scroll-mt-24">
           <div className="mx-auto max-w-6xl">
@@ -375,6 +481,11 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Divider */}
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 sm:pt-28">
+          <div className="section-divider rounded-full" />
+        </div>
 
         {/* ============== CONTACT ============== */}
         <section
@@ -541,27 +652,51 @@ function SocialLink({
 function ContactForm() {
   const [sending, setSending] = React.useState(false)
   const [sent, setSent] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setError(null)
+    const form = e.target as HTMLFormElement
+    const data = {
+      name: (form.elements.namedItem("name") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      message: (form.elements.namedItem("message") as HTMLTextAreaElement)
+        .value,
+    }
     setSending(true)
-    // Simulated send (no backend needed for portfolio)
-    setTimeout(() => {
-      setSending(false)
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(json.error || "Something went wrong.")
+      }
       setSent(true)
-      toast.success("Message captured! I'll get back to you soon.")
-      ;(e.target as HTMLFormElement).reset()
-      setTimeout(() => setSent(false), 3000)
-    }, 900)
+      toast.success("Message received! I'll reply within a day or two.")
+      form.reset()
+      setTimeout(() => setSent(false), 3500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send.")
+      toast.error(err instanceof Error ? err.message : "Failed to send.")
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-3 w-full">
+    <form onSubmit={onSubmit} className="flex flex-col gap-3 w-full" noValidate>
       <div className="grid sm:grid-cols-2 gap-3">
         <input
           required
           name="name"
+          minLength={2}
+          maxLength={80}
           placeholder="Your name"
+          autoComplete="name"
           className="h-11 px-4 rounded-xl bg-foreground/4 border border-foreground/8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:bg-foreground/6 transition-all"
         />
         <input
@@ -569,6 +704,7 @@ function ContactForm() {
           type="email"
           name="email"
           placeholder="you@email.com"
+          autoComplete="email"
           className="h-11 px-4 rounded-xl bg-foreground/4 border border-foreground/8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:bg-foreground/6 transition-all"
         />
       </div>
@@ -576,9 +712,16 @@ function ContactForm() {
         required
         name="message"
         rows={4}
+        minLength={10}
+        maxLength={2000}
         placeholder="What are you building?"
         className="px-4 py-3 rounded-xl bg-foreground/4 border border-foreground/8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:bg-foreground/6 transition-all resize-none"
       />
+      {error && (
+        <p className="text-xs text-destructive -mt-1" role="alert">
+          {error}
+        </p>
+      )}
       <button
         type="submit"
         disabled={sending || sent}
@@ -589,9 +732,15 @@ function ContactForm() {
         }}
       >
         {sending ? (
-          "Sending…"
+          <>
+            <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            Sending…
+          </>
         ) : sent ? (
-          "Sent — thank you!"
+          <>
+            Sent — thank you!
+            <Check className="h-4 w-4" />
+          </>
         ) : (
           <>
             Send message
@@ -599,6 +748,9 @@ function ContactForm() {
           </>
         )}
       </button>
+      <p className="text-[11px] text-muted-foreground/70">
+        Saved to my inbox. I typically reply within 1–2 business days.
+      </p>
     </form>
   )
 }
