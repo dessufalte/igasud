@@ -1106,3 +1106,71 @@ The portfolio is now a clean, minimal slide-based showcase matching the user's r
 3. **User's actual projects** — currently 5 sample IT projects; user should edit `data/projects.json` with their real projects
 4. **Theme toggle** — removed in this rebuild; could be re-added if desired
 5. **Project detail view** — currently each slide shows a summary; could add a "read more" that opens a full documentation drawer if needed
+
+---
+Task ID: 19 (user request: complex projects with JSON storage)
+Agent: main
+Task: Rebuild projects as complex as previous design (documentation drawer with TOC, reading progress, copy code, share, deep-linking, prev/next, related) but with JSON file storage
+
+## Current project status description/assessment
+User requested: "buat projectnya sekompleks rancangan sebelumnya hanya saja penyimpanannya berbasis json" — make projects as complex as the previous design (rounds 0-17 with full documentation drawers) but keep JSON file storage.
+
+Decision: Expand data/projects.json to include full documentation sections for all 6 projects. Build a comprehensive ProjectDocDrawer component reading from JSON (not Prisma). Add "Read Documentation" button on carousel slides. Keep all features from the old design: cover banner, section nav, TOC, reading progress, copy code, share buttons, deep-linking, prev/next, related projects, keyboard nav.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **Expanded JSON data** (`data/projects.json`)
+   - 6 projects (Aurora, Lumen, Harbor, Driftwood, Prism Motion, Atlas Maps)
+   - Each project has: slug, title, tagline, description, year, role, link, image, accent, category, status, featured, tech[], links{}, docs[]
+   - Each project has 4 documentation sections (Overview, Architecture, Features, Roadmap) with full markdown content including: headings, code blocks, tables, lists, blockquotes
+   - All stored in a single JSON file — no Prisma/database
+
+2. **ProjectDocDrawer** (`src/components/project-doc-drawer.tsx`)
+   - Reads project data directly from props (JSON, not API) — no fetch needed
+   - **Cover banner**: SmartImage with blur placeholder, gradient overlay, parallax on scroll
+   - **Header**: meta chips (category, year, sections), title, tagline, repo/demo links, share buttons (Twitter, LinkedIn, Copy link)
+   - **Sidebar**: reading overview bar (live % + gradient fill), section navigation (4 buttons with icons + accent color), TOC (auto-parsed from h2/h3 headings, active-heading scroll-spy)
+   - **Content**: markdown rendering with syntax highlighting (react-markdown + remark-gfm + Prism), copy-code button on code blocks, reading progress bar, section meta (reading time + section name), doc-enter animation
+   - **Section footer**: "Section X of N" counter + "Next section" button
+   - **Prev/next project navigation**: cyclic, with formatted project names
+   - **Related projects**: same category, accent-colored pills
+   - **Deep-linking**: URL hash `#/project/<slug>/<section>` — restore on mount + popstate, update on section change
+   - **Keyboard nav**: `[` prev project, `]` next project
+   - Bug fixed: deep-link restore effect was overriding section changes (ran on wrong deps). Fixed by separating restore effect (runs on slug change only) from hash-update effect (runs on section change)
+
+3. **Read Documentation button** on carousel slides
+   - Gradient button with BookOpen icon, accent-colored per project
+   - Only shows if project has docs
+   - Opens the ProjectDocDrawer
+
+4. **SmartImage component** (`src/components/smart-image.tsx`)
+   - Reusable next/image wrapper with blur-up placeholder
+   - Handles cached images (checks imgRef.current?.complete on mount)
+
+5. **Updated types** (`src/lib/portfolio-types.ts`)
+   - ProjectDoc interface (section, icon, content)
+   - Project interface expanded with slug, tagline, accent, category, status, featured, links, docs
+
+6. **API routes**
+   - `/api/data` — reads profile.json + projects.json from file system
+   - `/api/projects/[slug]` — reads individual project by slug from JSON
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Carousel: 6 projects, "Project 1 of 6", Read Documentation button present
+- ✅ Drawer opens: cover banner, sidebar with 4 sections, TOC, 3 share buttons, reading progress
+- ✅ Section switch: Architecture → h1 "Architecture", TOC "Tech stack", hash updates to `#/project/aurora-design-system/architecture`, active heading correct
+- ✅ Deep-link restore: reload with hash → drawer reopens at correct section
+- ✅ Keyboard `]`: Aurora → Lumen (next project), `[`: back to Aurora
+- ✅ Related projects: Lumen (Data & Analytics) → "Atlas Maps" pill
+- ✅ Copy code button: present on code blocks
+- ✅ Mobile (iPhone 14): drawer opens, cover banner, sidebar hidden, footer at bottom
+- ✅ Dev server: all 200s, lint clean, zero runtime errors
+
+## Unresolved issues or risks, and priority recommendations for next phase
+The portfolio is now as complex as the previous design but fully JSON-based.
+1. **User's actual data** — edit `data/profile.json` and `data/projects.json` with real info
+2. **Theme toggle** — could be re-added if desired
+3. **Print stylesheet** — could be re-added for documentation printing
+4. **RSS/feed** — not applicable (no blog section)
+5. **Admin/messages** — removed per user request (no contact form)

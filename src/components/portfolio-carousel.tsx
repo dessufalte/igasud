@@ -11,15 +11,17 @@ import {
   User,
   Link2,
   Github,
+  BookOpen,
 } from "lucide-react"
 import type { Project } from "@/lib/portfolio-types"
 import { cn } from "@/lib/utils"
 
 interface PortfolioCarouselProps {
   projects: Project[]
+  onReadDocs?: (project: Project) => void
 }
 
-export function PortfolioCarousel({ projects }: PortfolioCarouselProps) {
+export function PortfolioCarousel({ projects, onReadDocs }: PortfolioCarouselProps) {
   const [current, setCurrent] = React.useState(0)
   const [direction, setDirection] = React.useState(0)
 
@@ -180,6 +182,20 @@ export function PortfolioCarousel({ projects }: PortfolioCarouselProps) {
                   </a>
                 </div>
               </div>
+
+              {/* Read Docs button */}
+              {onReadDocs && project.docs && project.docs.length > 0 && (
+                <button
+                  onClick={() => onReadDocs(project)}
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.02]"
+                  style={{
+                    background: `linear-gradient(135deg, ${project.accent}, ${project.accent}dd)`,
+                  }}
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Read Documentation
+                </button>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>

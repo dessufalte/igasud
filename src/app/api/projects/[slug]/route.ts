@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { promises as fs } from "fs"
+import path from "path"
 
 export const dynamic = "force-dynamic"
 
@@ -9,36 +10,17 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    const project = await db.project.findUnique({
-      where: { slug },
-      include: {
-        docs: {
-          orderBy: { order: "asc" },
-          select: {
-            id: true,
-            section: true,
-            icon: true,
-            order: true,
-            content: true,
-          },
-        },
-      },
-    })
-
+    const dataDir = path.join(process.cwd(), "data")
+    const raw = await fs.readFile(path.join(dataDir, "projects.json"), "utf-8")
+    const projects = JSON.parse(raw)
+    const project = projects.find((p: any) => p.slug === slug)
     if (!project) {
       return NextResponse.json(
         { error: "Project not found" },
         { status: 404 }
       )
     }
-
-    const data = {
-      ...project,
-      techStack: JSON.parse(project.techStack) as string[],
-      links: project.links ? JSON.parse(project.links) : null,
-    }
-
-    return NextResponse.json({ project: data })
+    return NextResponse.json({ project })
   } catch (error) {
     console.error("[GET /api/projects/[slug]]", error)
     return NextResponse.json(

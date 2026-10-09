@@ -1,52 +1,236 @@
 [
   {
     "id": 1,
+    "slug": "aurora-design-system",
     "title": "Aurora Design System",
-    "description": "A token-driven, theme-aware design system for product teams. Aurora encodes every color, spacing, and motion decision as a semantic token, so re-theming an entire product takes minutes. It ships with 60+ accessible React components and a living documentation site with Figma sync. The system uses zero-runtime CSS and supports fluid typography across all viewport sizes.",
+    "tagline": "A token-driven, theme-aware design system for product teams.",
+    "description": "Aurora is a production-grade design system with semantic color tokens, fluid typography, and 60+ accessible React components. It ships with a living documentation site, Figma sync, and zero-runtime CSS.",
     "year": "2024",
     "role": "Lead Developer / Designer",
     "link": "https://github.com/yourname/aurora",
     "image": "/projects/aurora-design-system.png",
-    "tech": ["React", "TypeScript", "Radix UI", "Tailwind CSS"]
+    "accent": "#8b5cf6",
+    "category": "Design Systems",
+    "status": "shipped",
+    "featured": true,
+    "tech": ["React", "TypeScript", "Radix UI", "Tailwind CSS", "Storybook"],
+    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "docs": [
+      {
+        "section": "Overview",
+        "icon": "Sparkles",
+        "content": "# Aurora Design System\n\nAurora is a token-driven design system built for scale. Every color, spacing, and motion decision is encoded as a semantic token, so re-theming an entire product takes minutes — not months.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Aurora Design System aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+      },
+      {
+        "section": "Architecture",
+        "icon": "Layers",
+        "content": "# Architecture\n\nAurora Design System is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- React\n- TypeScript\n- Radix UI\n- Tailwind CSS\n- Storybook"
+      },
+      {
+        "section": "Features",
+        "icon": "ListChecks",
+        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+      },
+      {
+        "section": "Roadmap",
+        "icon": "Map",
+        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+      }
+    ]
   },
   {
     "id": 2,
+    "slug": "lumen-analytics",
     "title": "Lumen Analytics",
-    "description": "Privacy-first product analytics with edge ingestion. Lumen ingests millions of events per day at the edge with sub-50ms p99 latency. It features a query builder, cohort retention analysis, and a zero-cookie architecture that keeps user data on-device. The platform is built on Cloudflare Workers with ClickHouse as the storage layer.",
+    "tagline": "Privacy-first product analytics with edge ingestion.",
+    "description": "Lumen ingests millions of events per day at the edge, with sub-50ms p99 latency. It features a query builder, cohort retention, and a zero-cookie architecture that keeps user data on-device.",
     "year": "2024",
     "role": "Full-Stack Developer",
     "link": "https://github.com/yourname/lumen",
     "image": "/projects/lumen-analytics.png",
-    "tech": ["Next.js", "ClickHouse", "Cloudflare Workers", "TypeScript"]
+    "accent": "#06b6d4",
+    "category": "Data & Analytics",
+    "status": "shipped",
+    "featured": true,
+    "tech": ["Next.js", "ClickHouse", "Cloudflare Workers", "TypeScript"],
+    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "docs": [
+      {
+        "section": "Overview",
+        "icon": "Sparkles",
+        "content": "# Lumen Analytics\n\nLumen is a privacy-first analytics engine. It ingests events at the edge, never writes cookies, and keeps raw data on-device whenever possible. Teams get full funnel and retention tooling without compromising user trust.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Lumen Analytics aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+      },
+      {
+        "section": "Architecture",
+        "icon": "Layers",
+        "content": "# Architecture\n\nLumen Analytics is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- Next.js\n- ClickHouse\n- Cloudflare Workers\n- TypeScript"
+      },
+      {
+        "section": "Features",
+        "icon": "ListChecks",
+        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+      },
+      {
+        "section": "Roadmap",
+        "icon": "Map",
+        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+      }
+    ]
   },
   {
     "id": 3,
+    "slug": "harbor-cms",
     "title": "Harbor CMS",
-    "description": "A headless CMS that feels like a notebook. Harbor reimagines content management as a calm, block-based editor with real-time collaboration. Built on CRDTs (Yjs), it works offline-first and syncs instantly across devices. The editor supports custom block types and a plugin architecture for extending the writing experience.",
+    "tagline": "A headless CMS that feels like a notebook.",
+    "description": "Harbor reimagines content management as a calm, block-based editor with real-time collaboration. Built on CRDTs, it works offline-first and syncs instantly across devices.",
     "year": "2023",
     "role": "Product Engineer",
     "link": "https://github.com/yourname/harbor",
     "image": "/projects/harbor-cms.png",
-    "tech": ["Next.js", "Yjs", "Prisma", "PostgreSQL", "tRPC"]
+    "accent": "#f59e0b",
+    "category": "Developer Tools",
+    "status": "shipped",
+    "featured": true,
+    "tech": ["Next.js", "Yjs", "Prisma", "PostgreSQL", "tRPC"],
+    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "docs": [
+      {
+        "section": "Overview",
+        "icon": "Sparkles",
+        "content": "# Harbor CMS\n\nHarbor is a headless CMS that feels like a notebook. Block-based editing, CRDT sync, and offline-first storage make content authoring feel calm and immediate.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Harbor CMS aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+      },
+      {
+        "section": "Architecture",
+        "icon": "Layers",
+        "content": "# Architecture\n\nHarbor CMS is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- Next.js\n- Yjs\n- Prisma\n- PostgreSQL\n- tRPC"
+      },
+      {
+        "section": "Features",
+        "icon": "ListChecks",
+        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+      },
+      {
+        "section": "Roadmap",
+        "icon": "Map",
+        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+      }
+    ]
   },
   {
     "id": 4,
+    "slug": "driftwood-cli",
     "title": "Driftwood CLI",
-    "description": "Ship full-stack apps from a single command. Driftwood is a zero-config scaffolding CLI that generates production-ready Next.js apps with auth, billing, and CI pre-wired. It ships with 12 opinionated templates covering SaaS, e-commerce, and content platforms. The CLI includes a project generator with interactive prompts and intelligent defaults.",
+    "tagline": "Ship full-stack apps from a single command.",
+    "description": "Driftwood is a zero-config scaffolding CLI that generates production-ready Next.js apps with auth, billing, and CI pre-wired. It ships with 12 opinionated templates.",
     "year": "2023",
     "role": "Developer / Maintainer",
     "link": "https://github.com/yourname/driftwood",
     "image": "/projects/driftwood-cli.png",
-    "tech": ["Node.js", "TypeScript", "Bun", "Ink"]
+    "accent": "#10b981",
+    "category": "Developer Tools",
+    "status": "shipped",
+    "featured": false,
+    "tech": ["Node.js", "TypeScript", "Bun", "Ink"],
+    "links": { "repo": "https://github.com" },
+    "docs": [
+      {
+        "section": "Overview",
+        "icon": "Sparkles",
+        "content": "# Driftwood CLI\n\nDriftwood is a zero-config CLI that scaffolds production-ready full-stack apps. Auth, billing, CI, and observability are pre-wired — you just ship features.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Driftwood CLI aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+      },
+      {
+        "section": "Architecture",
+        "icon": "Layers",
+        "content": "# Architecture\n\nDriftwood CLI is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- Node.js\n- TypeScript\n- Bun\n- Ink"
+      },
+      {
+        "section": "Features",
+        "icon": "ListChecks",
+        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+      },
+      {
+        "section": "Roadmap",
+        "icon": "Map",
+        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+      }
+    ]
   },
   {
     "id": 5,
+    "slug": "prism-motion",
     "title": "Prism Motion",
-    "description": "Declarative scroll-driven animations for React. Prism Motion is a lightweight animation library focused on scroll storytelling. It composes framer-motion primitives into a declarative API with a 3kb runtime. The library includes scroll-triggered reveals, sticky elements, and progress-linked animations — all type-safe and tree-shakeable.",
+    "tagline": "Declarative scroll-driven animations for React.",
+    "description": "Prism Motion is a lightweight animation library focused on scroll storytelling. It composes framer-motion primitives into a declarative API with a 3kb runtime.",
     "year": "2024",
     "role": "Open Source Developer",
     "link": "https://github.com/yourname/prism-motion",
     "image": "/projects/prism-motion.png",
-    "tech": ["React", "Framer Motion", "TypeScript"]
+    "accent": "#ec4899",
+    "category": "Open Source",
+    "status": "in-progress",
+    "featured": false,
+    "tech": ["React", "Framer Motion", "TypeScript"],
+    "links": { "repo": "https://github.com" },
+    "docs": [
+      {
+        "section": "Overview",
+        "icon": "Sparkles",
+        "content": "# Prism Motion\n\nPrism Motion brings declarative scroll-driven storytelling to React. It wraps framer-motion in a tiny, composable API optimized for marketing pages and editorial layouts.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Prism Motion aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+      },
+      {
+        "section": "Architecture",
+        "icon": "Layers",
+        "content": "# Architecture\n\nPrism Motion is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- React\n- Framer Motion\n- TypeScript"
+      },
+      {
+        "section": "Features",
+        "icon": "ListChecks",
+        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+      },
+      {
+        "section": "Roadmap",
+        "icon": "Map",
+        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "slug": "atlas-maps",
+    "title": "Atlas Maps",
+    "tagline": "Vector tile rendering at 120fps in the browser.",
+    "description": "Atlas is a WebGL2 mapping engine that renders custom vector tiles with smooth camera transitions, 3D terrain, and a plugin ecosystem. Built for data visualization at scale.",
+    "year": "2022",
+    "role": "Graphics Engineer",
+    "link": "https://github.com/yourname/atlas",
+    "image": "/projects/atlas-maps.png",
+    "accent": "#6366f1",
+    "category": "Data & Analytics",
+    "status": "shipped",
+    "featured": false,
+    "tech": ["WebGL2", "TypeScript", "MapLibre", "Workers"],
+    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "docs": [
+      {
+        "section": "Overview",
+        "icon": "Sparkles",
+        "content": "# Atlas Maps\n\nAtlas is a WebGL2 mapping engine focused on data visualization. It renders custom vector tiles at 120fps with smooth camera transitions and 3D terrain.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Atlas Maps aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+      },
+      {
+        "section": "Architecture",
+        "icon": "Layers",
+        "content": "# Architecture\n\nAtlas Maps is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- WebGL2\n- TypeScript\n- MapLibre\n- Workers"
+      },
+      {
+        "section": "Features",
+        "icon": "ListChecks",
+        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+      },
+      {
+        "section": "Roadmap",
+        "icon": "Map",
+        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+      }
+    ]
   }
 ]

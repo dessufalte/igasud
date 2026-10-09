@@ -15,7 +15,8 @@ import {
 } from "lucide-react"
 import { AmbientBackground } from "@/components/ambient-background"
 import { PortfolioCarousel } from "@/components/portfolio-carousel"
-import type { PortfolioData } from "@/lib/portfolio-types"
+import { ProjectDocDrawer } from "@/components/project-doc-drawer"
+import type { PortfolioData, Project } from "@/lib/portfolio-types"
 import { cn } from "@/lib/utils"
 
 type View = "home" | "portfolio"
@@ -24,6 +25,7 @@ export default function Home() {
   const [data, setData] = React.useState<PortfolioData | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [view, setView] = React.useState<View>("home")
+  const [activeProjectSlug, setActiveProjectSlug] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     fetch("/api/data")
@@ -31,6 +33,20 @@ export default function Home() {
       .then((d) => setData(d))
       .catch(() => {})
       .finally(() => setLoading(false))
+  }, [])
+
+  // Deep-linking: restore project drawer from URL hash
+  React.useEffect(() => {
+    const restore = () => {
+      const hash = window.location.hash
+      const m = /^#\/project\/([^/]+)/.exec(hash)
+      if (m) {
+        setActiveProjectSlug(decodeURIComponent(m[1]))
+      }
+    }
+    restore()
+    window.addEventListener("popstate", restore)
+    return () => window.removeEventListener("popstate", restore)
   }, [])
 
   return (
@@ -97,7 +113,10 @@ export default function Home() {
             <div className="h-8 w-8 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin" />
           </div>
         ) : view === "portfolio" ? (
-          <PortfolioCarousel projects={data.projects} />
+          <PortfolioCarousel
+            projects={data.projects}
+            onReadDocs={(p) => setActiveProjectSlug(p.slug)}
+          />
         ) : (
           <HomeView data={data} onPortfolio={() => setView("portfolio")} />
         )}
@@ -114,6 +133,32 @@ export default function Home() {
           </span>
         </div>
       </footer>
+
+      {/* ===== Project Documentation Drawer ===== */}
+      {data && (
+        <ProjectDocDrawer
+          project={
+            data.projects.find((p) => p.slug === activeProjectSlug) ?? null
+          }
+          onClose={() => setActiveProjectSlug(null)}
+          allSlugs={data.projects.map((p) => p.slug)}
+          onNavigate={(slug) => setActiveProjectSlug(slug)}
+          relatedProjects={
+            data.projects.find((p) => p.slug === activeProjectSlug)
+              ? data.projects
+                  .filter(
+                    (p) =>
+                      p.slug !== activeProjectSlug &&
+                      p.category ===
+                        data.projects.find(
+                          (pp) => pp.slug === activeProjectSlug
+                        )?.category
+                  )
+                  .slice(0, 4)
+              : []
+          }
+        />
+      )}
     </div>
   )
 }
