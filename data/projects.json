@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "title": "Aurora Design System",
+    "description": "A token-driven, theme-aware design system for product teams. Aurora encodes every color, spacing, and motion decision as a semantic token, so re-theming an entire product takes minutes. It ships with 60+ accessible React components and a living documentation site with Figma sync. The system uses zero-runtime CSS and supports fluid typography across all viewport sizes.",
+    "year": "2024",
+    "role": "Lead Developer / Designer",
+    "link": "https://github.com/yourname/aurora",
+    "image": "/projects/aurora-design-system.png",
+    "tech": ["React", "TypeScript", "Radix UI", "Tailwind CSS"]
+  },
+  {
+    "id": 2,
+    "title": "Lumen Analytics",
+    "description": "Privacy-first product analytics with edge ingestion. Lumen ingests millions of events per day at the edge with sub-50ms p99 latency. It features a query builder, cohort retention analysis, and a zero-cookie architecture that keeps user data on-device. The platform is built on Cloudflare Workers with ClickHouse as the storage layer.",
+    "year": "2024",
+    "role": "Full-Stack Developer",
+    "link": "https://github.com/yourname/lumen",
+    "image": "/projects/lumen-analytics.png",
+    "tech": ["Next.js", "ClickHouse", "Cloudflare Workers", "TypeScript"]
+  },
+  {
+    "id": 3,
+    "title": "Harbor CMS",
+    "description": "A headless CMS that feels like a notebook. Harbor reimagines content management as a calm, block-based editor with real-time collaboration. Built on CRDTs (Yjs), it works offline-first and syncs instantly across devices. The editor supports custom block types and a plugin architecture for extending the writing experience.",
+    "year": "2023",
+    "role": "Product Engineer",
+    "link": "https://github.com/yourname/harbor",
+    "image": "/projects/harbor-cms.png",
+    "tech": ["Next.js", "Yjs", "Prisma", "PostgreSQL", "tRPC"]
+  },
+  {
+    "id": 4,
+    "title": "Driftwood CLI",
+    "description": "Ship full-stack apps from a single command. Driftwood is a zero-config scaffolding CLI that generates production-ready Next.js apps with auth, billing, and CI pre-wired. It ships with 12 opinionated templates covering SaaS, e-commerce, and content platforms. The CLI includes a project generator with interactive prompts and intelligent defaults.",
+    "year": "2023",
+    "role": "Developer / Maintainer",
+    "link": "https://github.com/yourname/driftwood",
+    "image": "/projects/driftwood-cli.png",
+    "tech": ["Node.js", "TypeScript", "Bun", "Ink"]
+  },
+  {
+    "id": 5,
+    "title": "Prism Motion",
+    "description": "Declarative scroll-driven animations for React. Prism Motion is a lightweight animation library focused on scroll storytelling. It composes framer-motion primitives into a declarative API with a 3kb runtime. The library includes scroll-triggered reveals, sticky elements, and progress-linked animations — all type-safe and tree-shakeable.",
+    "year": "2024",
+    "role": "Open Source Developer",
+    "link": "https://github.com/yourname/prism-motion",
+    "image": "/projects/prism-motion.png",
+    "tech": ["React", "Framer Motion", "TypeScript"]
+  }
+]

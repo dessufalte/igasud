@@ -1025,3 +1025,84 @@ No blocking issues. All features working. Recommended next-step enhancements:
 6. **Article cover images** — generate cover images for articles (like projects have)
 7. **Print-specific styles per article** — article print stylesheet
 8. **Analytics** — privacy-friendly page view tracking
+
+---
+Task ID: 18 (user redesign request)
+Agent: main
+Task: Complete redesign per user requirements — JSON file storage, slide-based portfolio carousel, no scrolling, photo gallery, no search/contact/admin
+
+## Current project status description/assessment
+The user requested a fundamental redesign of the portfolio with these specific requirements:
+1. Use JSON file storage only (no Prisma/database) — use the file system
+2. Build only for project showcase (no blog/articles)
+3. Portfolio should NOT be page scrolling — slide-based/carousel with left/right navigation
+4. Main menu with options → click Portfolio → left/right navigation between projects
+5. No search feature
+6. Main page should show photos of the user (photo gallery)
+7. No send message feature
+8. About only on front page
+9. Showcase IT projects
+10. PDF reference (NamaLengkap_Portofolio_Academy.pdf) shows the portfolio layout: each project as a slide with title, description, year, role, publication link, photo, and "Project 1 of 5" counter
+
+Decision: Complete rebuild of page.tsx and supporting components. Remove all database-dependent features (Prisma, admin, contact, blog, articles, search, command palette, shortcuts help, scroll utilities, cursor glow, tech marquee, doc drawer, article drawer). Create new JSON data files and API route. Build new PortfolioCarousel component matching the PDF layout.
+
+## Current goals / completed modifications / verification results
+
+### Features added
+1. **JSON file storage** (`data/profile.json` + `data/projects.json`)
+   - `profile.json`: name, role, university, contact (phone/email/linkedin/github), about text, photos array
+   - `projects.json`: array of 5 IT projects with {id, title, description, year, role, link, image, tech}
+   - API route `/api/data` reads both files from the file system via `fs.promises.readFile`
+   - No Prisma/database dependency
+
+2. **PortfolioCarousel** (`src/components/portfolio-carousel.tsx`)
+   - Slide-based viewer — NO scrolling, one project per screen
+   - Layout matches PDF reference: left side = project image, right side = title, description, year, role, publication link
+   - Navigation: left/right arrow buttons + keyboard (ArrowLeft/ArrowRight, j/k)
+   - "Project X of N" counter
+   - Dot indicators (click to jump)
+   - AnimatePresence slide transition (fade + horizontal slide)
+   - Tech tags below title
+   - Verified: "Project 1 of 5", next → "Project 2 of 5", prev → back, dots jump, keyboard works
+
+3. **Photo gallery** on home page
+   - 4 placeholder portrait photos generated via z-ai image CLI (1024×1024)
+   - Grid layout (2 cols mobile, 4 cols desktop), aspect-square, hover zoom
+   - Photos sourced from `profile.json` → `photos` array
+   - Stored in `/public/photos/profile-{1-4}.jpg`
+   - Verified: 4 photos render on home page
+
+4. **Main menu** (Home / Portfolio / About)
+   - Navbar with 3 menu options + logo
+   - Home: hero (name, university, contact) + photo gallery + about section
+   - Portfolio: carousel viewer (no scrolling)
+   - About: scrolls to about section on home page (about only on front page)
+   - Icons on mobile (labels hidden), full labels on desktop
+   - Verified: menu switches between Home and Portfolio views
+
+5. **Removed all database/Prisma-dependent features**
+   - Removed: ProjectDocDrawer, ArticleDrawer, CommandPalette, ShortcutsHelp, AdminPanel, AdminAuth, ScrollUtilities, CursorGlow, TechMarquee, ProjectCard, ProjectListCard, ContactForm, ReadingMilestone, SmartImage
+   - Removed: all Prisma API routes (projects, articles, contact, admin, feed.xml, sitemap)
+   - Removed: useLocalStorage hook (no preferences to persist)
+   - Removed: blog/writing section, admin panel, contact form, search, sort/filter, keyboard shortcuts help
+   - Kept: AmbientBackground (visual), glassmorphism design system
+
+### Verification (agent-browser, desktop + mobile)
+- ✅ Home view: name "Nama Lengkap", 4 photos, about text, contact info, "View Portfolio" CTA
+- ✅ Portfolio carousel: "Project 1 of 5", Aurora Design System, image, year/role/link
+- ✅ Next arrow: → "Project 2 of 5" Lumen Analytics
+- ✅ Prev arrow: → back to Project 1
+- ✅ Keyboard: ArrowRight → next, ArrowLeft → prev
+- ✅ Dot navigation: click dot 3 → "Project 3 of 5" Harbor CMS
+- ✅ Home button: returns to home view with photos + about
+- ✅ Mobile (iPhone 14): menu icons, carousel works, photos, footer at bottom
+- ✅ Dev server: all 200s, lint clean, zero runtime errors
+- ✅ JSON API: `/api/data` returns profile + projects from file system
+
+## Unresolved issues or risks, and priority recommendations for next phase
+The portfolio is now a clean, minimal slide-based showcase matching the user's requirements.
+1. **User's actual photos** — currently using AI-generated placeholder portraits; user should replace with their own photos in `/public/photos/`
+2. **User's actual name/contact** — currently "Nama Lengkap" placeholder; user should edit `data/profile.json`
+3. **User's actual projects** — currently 5 sample IT projects; user should edit `data/projects.json` with their real projects
+4. **Theme toggle** — removed in this rebuild; could be re-added if desired
+5. **Project detail view** — currently each slide shows a summary; could add a "read more" that opens a full documentation drawer if needed
