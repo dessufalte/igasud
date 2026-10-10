@@ -1,18 +1,15 @@
 {
-  "name": "Nama Lengkap",
-  "role": "Student / Alumni",
-  "university": "Apple Developer Academy Indonesia",
+  "name": "Igasud Studio",
+  "role": "AI & Software Development Agency",
+  "university": "Part of Gigantech Software",
   "contact": {
     "phone": "+62 812 3456 7890",
-    "email": "hello@example.com",
-    "linkedin": "https://linkedin.com/in/yourname",
-    "github": "https://github.com/yourname"
+    "email": "hello@igasud.tech",
+    "linkedin": "https://linkedin.com/company/igasud-studio",
+    "github": "https://github.com/dessulfate"
   },
-  "about": "I am an IT developer passionate about building calm, considered software. This portfolio showcases my work across design systems, edge architecture, and developer tools — each project documented with care.",
+  "about": "Igasud Studio is a tech startup specializing in full-stack software development, AI integration, and enterprise architecture. We build intelligent platforms and interactive simulations designed to streamline operations and deliver actionable, data-driven insights.",
   "photos": [
-    "/photos/profile-1.jpg",
-    "/photos/profile-2.jpg",
-    "/photos/profile-3.jpg",
-    "/photos/profile-4.jpg"
+   
   ]
 }

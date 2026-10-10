@@ -19,11 +19,11 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://portfolio.example"),
   title: {
-    default: "Portfolio — Apple Developer Academy",
+    default: "Igasud Studio",
     template: "%s · Portfolio",
   },
   description:
-    "IT project showcase portfolio — a slide-based gallery of projects with descriptions, roles, and publication links.",
+    "showcase portfolio — a slide-based gallery of projects with descriptions, roles, and publication links.",
   keywords: [
     "portfolio",
     "project documentation",
