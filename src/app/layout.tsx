@@ -17,24 +17,27 @@ const jetbrains = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://portfolio.example"),
+  metadataBase: new URL("https://igasud.tech"),
   title: {
-    default: "Igasud Studio",
-    template: "%s · Portfolio",
+    default: "Igasud Studio — Game Simulation Engine & Autonomous AI Lab",
+    template: "%s · Igasud Studio",
   },
   description:
-    "showcase portfolio — a slide-based gallery of projects with descriptions, roles, and publication links.",
+    "Igasud Studio develops high-throughput web-native game simulation engines with Component-Material Data Abstractions and dual-loop reinforcement learning paired with Anthropic Claude cognitive orchestration.",
   keywords: [
-    "portfolio",
-    "project documentation",
-    "design systems",
-    "next.js",
-    "glassmorphism",
-    "typescript",
-    "developer portfolio",
+    "game simulation engine",
+    "data-oriented design",
+    "component-material abstraction",
+    "reinforcement learning",
+    "neuro-symbolic ai",
+    "anthropic claude",
+    "webgpu",
+    "webassembly",
+    "physics simulation",
+    "igasud studio",
   ],
-  authors: [{ name: "Studio" }],
-  creator: "Studio",
+  authors: [{ name: "Igasud Studio" }],
+  creator: "Igasud Studio",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -48,25 +51,25 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Studio — Portfolio & Project Documentation",
+    title: "Igasud Studio — Game Simulation Engine & Autonomous AI Lab",
     description:
-      "A minimalist portfolio showcasing shipped products, design systems, and open-source work.",
+      "High-performance deterministic web simulation engine with Component-Material abstractions and Claude-orchestrated reinforcement learning.",
     type: "website",
-    siteName: "Studio",
+    siteName: "Igasud Studio",
     images: [
       {
         url: "/og-image.png",
         width: 1344,
         height: 768,
-        alt: "Studio — Portfolio & Project Documentation",
+        alt: "Igasud Studio — Simulation Engine & AI Architecture",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Studio — Portfolio",
+    title: "Igasud Studio — Game Simulation Engine & Autonomous AI Lab",
     description:
-      "A minimalist portfolio with full project documentation.",
+      "High-performance deterministic web simulation engine with Component-Material abstractions and Claude-orchestrated reinforcement learning.",
     images: ["/og-image.png"],
   },
   robots: {

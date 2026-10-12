@@ -1,15 +1,13 @@
 {
   "name": "Igasud Studio",
-  "role": "AI & Software Development Agency",
-  "university": "Part of Gigantech Software",
+  "role": "Deterministic Simulation Engine & Autonomous AI Lab",
+  "university": "Aetheris Simulation Framework",
   "contact": {
     "phone": "+62 812 3456 7890",
     "email": "hello@igasud.tech",
     "linkedin": "https://linkedin.com/company/igasud-studio",
     "github": "https://github.com/dessulfate"
   },
-  "about": "Igasud Studio is a tech startup specializing in full-stack software development, AI integration, and enterprise architecture. We build intelligent platforms and interactive simulations designed to streamline operations and deliver actionable, data-driven insights.",
-  "photos": [
-   
-  ]
+  "about": "Igasud Studio is an independent deep-tech simulation laboratory engineering high-throughput, web-native game simulation engines. We pioneer Component-Material Data Abstractions (CMDA) decoupled from traditional OOP constraints, bridging deterministic local reinforcement learning with Anthropic Claude's cognitive orchestration for emergent multi-agent ecosystems directly in the browser.",
+  "photos": []
 }

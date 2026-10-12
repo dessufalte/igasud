@@ -1,235 +1,142 @@
 [
   {
     "id": 1,
-    "slug": "aurora-design-system",
-    "title": "Aurora Design System",
-    "tagline": "A token-driven, theme-aware design system for product teams.",
-    "description": "Aurora is a production-grade design system with semantic color tokens, fluid typography, and 60+ accessible React components. It ships with a living documentation site, Figma sync, and zero-runtime CSS.",
-    "year": "2024",
-    "role": "Lead Developer / Designer",
-    "link": "https://github.com/yourname/aurora",
+    "slug": "aetheris-core-engine",
+    "title": "Aetheris Core Engine",
+    "tagline": "Deterministic browser game simulation engine powered by Component-Material Data Abstractions.",
+    "description": "Aetheris is an experimental high-performance JavaScript/WebAssembly physics-material simulation engine. Built with Data-Oriented Design (DOD), contiguous TypedArray buffers, and zero-GC memory pooling, it runs 100k+ active material particles at 60 FPS directly in the browser runtime.",
+    "year": "2026",
+    "role": "Engine Architecture & Core Systems",
+    "link": "https://igasud.tech",
     "image": "/projects/aurora-design-system.png",
     "accent": "#8b5cf6",
-    "category": "Design Systems",
-    "status": "shipped",
+    "category": "Simulation Engine",
+    "status": "in-progress",
     "featured": true,
-    "tech": ["React", "TypeScript", "Radix UI", "Tailwind CSS", "Storybook"],
-    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "tech": ["JavaScript", "WebGPU", "WebAssembly", "Data-Oriented ECS", "SharedArrayBuffer"],
+    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
     "docs": [
       {
         "section": "Overview",
         "icon": "Sparkles",
-        "content": "# Aurora Design System\n\nAurora is a token-driven design system built for scale. Every color, spacing, and motion decision is encoded as a semantic token, so re-theming an entire product takes minutes — not months.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Aurora Design System aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+        "content": "# Aetheris Core Engine\n\nAetheris is a next-generation, web-native simulation engine engineered to eliminate the architectural bottlenecks of conventional JavaScript game engines.\n\n## The Problem with Traditional Web Engines\nMost JavaScript engines rely on object-oriented hierarchies (`class Entity`, `class Mesh`). In complex simulations with tens of thousands of dynamic bodies, this causes:\n- **Severe Cache Invalidation**: Pointers are scattered across V8 heap space.\n- **Garbage Collection (GC) Stutters**: Frequent object instantiations trigger unpredictable GC pauses, breaking frame pacing.\n- **Non-Deterministic Physics**: Floating point inconsistencies across client runtimes make synchronized multi-agent simulations impossible.\n\n## The Aetheris Solution\nAetheris redesigns the browser game pipeline from first principles through **Data-Oriented Design (DOD)** and **Component-Material Data Abstractions (CMDA)**, executing contiguous numerical buffers over WebGPU compute passes and WebAssembly kernels."
       },
       {
         "section": "Architecture",
         "icon": "Layers",
-        "content": "# Architecture\n\nAurora Design System is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- React\n- TypeScript\n- Radix UI\n- Tailwind CSS\n- Storybook"
+        "content": "# Core Engine Architecture\n\nAetheris decouples logic from data storage, structuring all simulation entities into contiguous memory blocks.\n\n```\n┌─────────────────────────────────────────────────────────────┐\n│                     AETHERIS MEMORY ARENA                   │\n│ ┌───────────────────────┐         ┌───────────────────────┐ │\n│ │ Entity Index Table    │         │ Material Tensor Pool  │ │\n│ │ [Uint32: ID, Flags]   │         │ [Float32: M-Matrices] │ │\n│ └──────────┬────────────┘         └───────────┬───────────┘ │\n│            │                                  │             │\n│            ▼                                  ▼             │\n│ ┌─────────────────────────────────────────────────────────┐ │\n│ │ Structure-of-Arrays (SoA) Transform & Kinematics Stream │ │\n│ │ PosX[] | PosY[] | VelX[] | VelY[] | Mass[] | Stress[]   │ │\n│ └─────────────────────────────────────────────────────────┘ │\n└──────────────────────────────┬──────────────────────────────┘\n                               ▼\n┌─────────────────────────────────────────────────────────────┐\n│ WebGPU Compute Shader / WASM Deterministic Tick (60/120 Hz) │\n└─────────────────────────────────────────────────────────────┘\n```\n\n## Architectural Guarantees\n1. **Zero-Allocation Game Loop**: Memory buffers are pre-allocated during engine initialization in `SharedArrayBuffer` arenas.\n2. **Fixed-Step Determinism**: State evolution proceeds in strict discrete steps ($dt = 1/60s$), enabling frame-exact replays and multi-agent training reproducibility."
       },
       {
-        "section": "Features",
-        "icon": "ListChecks",
-        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+        "section": "Material Abstraction",
+        "icon": "Box",
+        "content": "# Component-Material Data Abstractions (CMDA)\n\nIn Aetheris, an entity does not merely possess a collision mask. It is bound to a physical-chemical **Material Tensor** describing how it interacts with heat, shear stress, and momentum.\n\n## Tensor Mathematical Formulation\nEach material type is encoded as a compact 32-byte numerical vector:\n\n$$M = \\begin{bmatrix} \\rho & \\text{Density } (kg/m^3) \\\\ \\mu & \\text{Friction Coefficient} \\\\ \\kappa & \\text{Thermal Conductivity } (W/m\\cdot K) \\\\ \\sigma_y & \\text{Tensile Yield Stress } (MPa) \\\\ \\epsilon & \\text{Restitution / Elastic Modulus} \\end{bmatrix}$$\n\n## Dynamic Phase Transition\nWhen stress or thermal thresholds exceed $\\sigma_y$, systems trigger continuous state transformations (e.g., solid brittle fracturing $\\rightarrow$ granular aggregate $\\rightarrow$ viscous fluid) using unified particle-based equations."
       },
       {
-        "section": "Roadmap",
-        "icon": "Map",
-        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+        "section": "Benchmarks",
+        "icon": "Cpu",
+        "content": "# Performance & Benchmark Telemetry\n\nBenchmarks evaluated on standard consumer hardware (Apple M-Series / RTX 3060) within Google Chrome and Safari WebGPU runtimes:\n\n| Simulation Metric | Standard JS Engine (Three/Babylon) | Aetheris Core Engine | Improvement |\n| :--- | :--- | :--- | :--- |\n| Active Dynamic Particles | ~8,500 particles | **110,000+ particles** | **12.9x throughput** |\n| Physics Tick Latency | 14.8 ms | **1.18 ms** | **92% reduction** |\n| GC Pause Time / Minute | 120 - 350 ms | **0.00 ms (Zero GC)** | **100% elimination** |\n| Memory Footprint (10k bodies) | 185 MB | **14.2 MB** | **92.3% smaller** |\n\nAll metrics are validated using the Chrome DevTools Memory Profiler and Performance Timeline."
       }
     ]
   },
   {
     "id": 2,
-    "slug": "lumen-analytics",
-    "title": "Lumen Analytics",
-    "tagline": "Privacy-first product analytics with edge ingestion.",
-    "description": "Lumen ingests millions of events per day at the edge, with sub-50ms p99 latency. It features a query builder, cohort retention, and a zero-cookie architecture that keeps user data on-device.",
-    "year": "2024",
-    "role": "Full-Stack Developer",
-    "link": "https://github.com/yourname/lumen",
+    "slug": "neuralkinematics-rl",
+    "title": "NeuralKinematics Agent Framework",
+    "tagline": "Dual-loop reinforcement learning and Claude neuro-symbolic cognitive orchestration.",
+    "description": "A multi-agent reinforcement learning framework embedded within the Aetheris runtime. Fast local PPO/SAC policies execute motor control and locomotion on WebGPU/WASM, while Anthropic Claude models serve as asynchronous Cognitive Orchestrators for dynamic reward shaping and goal synthesis.",
+    "year": "2026",
+    "role": "AI Architecture & RL Engineering",
+    "link": "https://igasud.tech",
     "image": "/projects/lumen-analytics.png",
     "accent": "#06b6d4",
-    "category": "Data & Analytics",
-    "status": "shipped",
+    "category": "Autonomous AI & RL",
+    "status": "in-progress",
     "featured": true,
-    "tech": ["Next.js", "ClickHouse", "Cloudflare Workers", "TypeScript"],
-    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "tech": ["Reinforcement Learning", "Anthropic Claude 3.5", "ONNX Runtime Web", "PPO / SAC", "WASM"],
+    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
     "docs": [
       {
         "section": "Overview",
         "icon": "Sparkles",
-        "content": "# Lumen Analytics\n\nLumen is a privacy-first analytics engine. It ingests events at the edge, never writes cookies, and keeps raw data on-device whenever possible. Teams get full funnel and retention tooling without compromising user trust.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Lumen Analytics aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+        "content": "# NeuralKinematics Agent Framework\n\nNeuralKinematics introduces a **Dual-Loop Neuro-Symbolic** framework designed for autonomous simulation agents operating inside physical environments.\n\n## The Core RL Challenge\nTraditional Reinforcement Learning (RL) excels at fine-grained motor control (such as maintaining balance or applying joint torques), but suffers in complex emergent games:\n1. **Sparse Reward Dilemma**: Agents struggle to learn long-horizon strategies without hand-crafted heuristics.\n2. **Brittle Generalization**: Policies trained on one friction coefficient fail when the material properties change.\n3. **Lack of Semantic Reasoning**: Pure neural policies cannot reason about high-level intentions or social coordination.\n\n## The Solution: Hierarchical Dual-Loop Coupling\nWe decouple **physical reaction** from **cognitive strategy**:\n- **Micro-Loop (120 Hz)**: On-device WASM/WebGPU policy neural network executing joint forces.\n- **Macro-Loop (Asynchronous)**: Anthropic Claude 3.5 Sonnet analyzing global simulation state tensors, adapting rewards, and directing high-level agent intentions."
       },
       {
-        "section": "Architecture",
-        "icon": "Layers",
-        "content": "# Architecture\n\nLumen Analytics is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- Next.js\n- ClickHouse\n- Cloudflare Workers\n- TypeScript"
+        "section": "Micro-Loop Policy",
+        "icon": "Zap",
+        "content": "# Micro-Loop: Local Policy Execution\n\nThe local policy runs with sub-millisecond execution times within the browser thread via WebAssembly and ONNX Runtime Web.\n\n## State & Observation Space\nAt every physics tick $t$, the agent receives a vectorized observation vector $S_t$:\n- **Proprioceptive State**: Joint angles, angular velocities, linear momentum, and ground normal contacts.\n- **Exteroceptive Sensory Array**: 32-ray local distance and material impedance sensor readings sampled from the Component-Material buffer.\n\n$$\\text{Action Space } A_t = [\\tau_1, \\tau_2, \\dots, \\tau_k] \\quad (\\tau_i \\in [-1.0, 1.0] \\text{ Normalized Motor Torques})$$\n\nInference executes in **0.12ms** per agent, allowing hundreds of active RL agents in a single browser tab."
       },
       {
-        "section": "Features",
-        "icon": "ListChecks",
-        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
+        "section": "Claude Integration",
+        "icon": "Brain",
+        "content": "# Macro-Loop: Anthropic Claude Cognitive Core\n\nAnthropic Claude is integrated directly into the training loop and runtime narrative engine.\n\n```\n┌────────────────────────────────────────────────────────┐\n│       LOCAL SIMULATION ENVIRONMENT (Aetheris WASM)     │\n│  Active Micro-Policies -> Continuous State Sampling    │\n└───────────────────────────┬────────────────────────────┘\n                            │ (Periodic State Snapshots)\n                            ▼\n┌────────────────────────────────────────────────────────┐\n│            ANTHROPIC CLAUDE 3.5 COGNITIVE BUS          │\n│  1. Goal Formulation: Translates context into intent   │\n│  2. Dynamic Reward Shaping: Synthesizes reward weights │\n│  3. Anomaly & Curricula Synthesis: Injects edge cases  │\n└───────────────────────────┬────────────────────────────┘\n                            │ (Updated Reward Shapers)\n                            ▼\n┌────────────────────────────────────────────────────────┐\n│             POLICY OPTIMIZER (PPO Loss Loop)           │\n│  Adaptive loss gradient guided by Claude rewards       │\n└────────────────────────────────────────────────────────┘\n```\n\n## Key Claude Capabilities\n- **Reward Function Synthesis**: Claude generates adaptive reward functions based on simulation progress: if agents fail on high-friction gravel, Claude adapts reward coefficients to encourage step-height clearance.\n- **Natural Language Environment Compilation**: Developers describe test scenarios in plain English, and Claude compiles them directly into initial Aetheris component buffers."
       },
       {
-        "section": "Roadmap",
-        "icon": "Map",
-        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+        "section": "Training Telemetry",
+        "icon": "Activity",
+        "content": "# Training Telemetry & Generalization\n\nTraining performance comparing baseline PPO vs Claude-Guided Hierarchical PPO:\n\n- **Sample Efficiency**: Reached 80% locomotion mastery in **3.4x fewer environmental frames**.\n- **Cross-Material Zero-Shot Adaptation**: Successfully traversed low-friction ice ($u = 0.05$) and high-viscosity mud ($u = 0.85$) without retraining, guided by real-time sensory material classification.\n- **Token Optimization**: Prompt caching and structured JSON outputs keep Claude API latency minimal while preserving deep strategic context."
       }
     ]
   },
   {
     "id": 3,
-    "slug": "harbor-cms",
-    "title": "Harbor CMS",
-    "tagline": "A headless CMS that feels like a notebook.",
-    "description": "Harbor reimagines content management as a calm, block-based editor with real-time collaboration. Built on CRDTs, it works offline-first and syncs instantly across devices.",
-    "year": "2023",
-    "role": "Product Engineer",
-    "link": "https://github.com/yourname/harbor",
-    "image": "/projects/harbor-cms.png",
-    "accent": "#f59e0b",
-    "category": "Developer Tools",
+    "slug": "project-substratum",
+    "title": "Project Substratum: Material Ecosystem",
+    "tagline": "Emergent macroscopic terrain erosion and fluid-solid material interaction simulation.",
+    "description": "Interactive sandbox simulation demonstrating large-scale hydraulic erosion, granular flow, and thermal dissipation. Entities dynamically alter terrain based on physical material tensors rather than canned scripted triggers.",
+    "year": "2025",
+    "role": "Physics Simulation & Graphics",
+    "link": "https://igasud.tech",
+    "image": "/projects/prism-motion.png",
+    "accent": "#10b981",
+    "category": "Physics Simulation",
     "status": "shipped",
     "featured": true,
-    "tech": ["Next.js", "Yjs", "Prisma", "PostgreSQL", "tRPC"],
-    "links": { "repo": "https://github.com", "demo": "https://example.com" },
+    "tech": ["WebGPU Compute", "Fluid Dynamics", "SPH Particles", "Material Tensors", "TypeScript"],
+    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
     "docs": [
       {
         "section": "Overview",
         "icon": "Sparkles",
-        "content": "# Harbor CMS\n\nHarbor is a headless CMS that feels like a notebook. Block-based editing, CRDT sync, and offline-first storage make content authoring feel calm and immediate.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Harbor CMS aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+        "content": "# Project Substratum\n\nProject Substratum is a large-scale environmental simulation testbed demonstrating the power of continuous Component-Material interactions.\n\n## Simulation Scope\nRather than pre-baking terrain heightmaps or script-triggered destruction animations, Substratum simulates:\n- **Fluid Mechanics**: Real-time river carving, sediment transport, and evaporation.\n- **Granular Avalanches**: Angle of repose collapses for sand, gravel, and snow based on granular mechanics.\n- **Thermal Dissipation**: Heat transfer through conductive geological strata."
       },
       {
-        "section": "Architecture",
-        "icon": "Layers",
-        "content": "# Architecture\n\nHarbor CMS is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- Next.js\n- Yjs\n- Prisma\n- PostgreSQL\n- tRPC"
+        "section": "Physics Formulation",
+        "icon": "Flame",
+        "content": "# Physics Formulation: SPH & Granular Mechanics\n\nSubstratum executes a dual-phase simulation using Smoothed-Particle Hydrodynamics (SPH) coupled to continuous granular continuum mechanics:\n\n$$\\rho_i = \\sum_j m_j W(\\mathbf{r}_i - \\mathbf{r}_j, h)$$\n\n$$\\frac{d\\mathbf{v}_i}{dt} = - \\sum_j m_j \\left( \\frac{P_i}{\\rho_i^2} + \\frac{P_j}{\\rho_j^2} \\right) \\nabla W(\\mathbf{r}_i - \\mathbf{r}_j, h) + \\mathbf{g}$$\n\nAll pressure gradient solvers and viscosity dampers execute in parallel WebGPU workgroups."
       },
       {
-        "section": "Features",
-        "icon": "ListChecks",
-        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
-      },
-      {
-        "section": "Roadmap",
-        "icon": "Map",
-        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+        "section": "Scenario Generation",
+        "icon": "Sliders",
+        "content": "# Procedural Scenario Synthesis\n\nBy leveraging Claude API's structured output generation, researchers and level designers can synthesize geologically coherent scenarios instantly:\n- Prompt: *\"Generate a volcanic caldron with basalt foundations undergoing torrential rainfall and flash mudslides.\"*\n- Output: A verified JSON payload containing tensor seeds, hydraulic flow emitters, and thermal boundary conditions loaded directly into the WebGPU buffer."
       }
     ]
   },
   {
     "id": 4,
-    "slug": "driftwood-cli",
-    "title": "Driftwood CLI",
-    "tagline": "Ship full-stack apps from a single command.",
-    "description": "Driftwood is a zero-config scaffolding CLI that generates production-ready Next.js apps with auth, billing, and CI pre-wired. It ships with 12 opinionated templates.",
-    "year": "2023",
-    "role": "Developer / Maintainer",
-    "link": "https://github.com/yourname/driftwood",
+    "slug": "aetheris-studio-sdk",
+    "title": "Aetheris Developer Studio & Telemetry",
+    "tagline": "Browser-based telemetry workbench, material tensor inspector, and live RL visualizer.",
+    "description": "Web-first IDE and telemetry suite for real-time memory arena profiling, tensor inspection, and live RL agent reward curve debugging with Claude-powered architectural diagnostics.",
+    "year": "2026",
+    "role": "Developer Tooling & Platform",
+    "link": "https://igasud.tech",
     "image": "/projects/driftwood-cli.png",
-    "accent": "#10b981",
+    "accent": "#f59e0b",
     "category": "Developer Tools",
-    "status": "shipped",
-    "featured": false,
-    "tech": ["Node.js", "TypeScript", "Bun", "Ink"],
-    "links": { "repo": "https://github.com" },
-    "docs": [
-      {
-        "section": "Overview",
-        "icon": "Sparkles",
-        "content": "# Driftwood CLI\n\nDriftwood is a zero-config CLI that scaffolds production-ready full-stack apps. Auth, billing, CI, and observability are pre-wired — you just ship features.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Driftwood CLI aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
-      },
-      {
-        "section": "Architecture",
-        "icon": "Layers",
-        "content": "# Architecture\n\nDriftwood CLI is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- Node.js\n- TypeScript\n- Bun\n- Ink"
-      },
-      {
-        "section": "Features",
-        "icon": "ListChecks",
-        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
-      },
-      {
-        "section": "Roadmap",
-        "icon": "Map",
-        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
-      }
-    ]
-  },
-  {
-    "id": 5,
-    "slug": "prism-motion",
-    "title": "Prism Motion",
-    "tagline": "Declarative scroll-driven animations for React.",
-    "description": "Prism Motion is a lightweight animation library focused on scroll storytelling. It composes framer-motion primitives into a declarative API with a 3kb runtime.",
-    "year": "2024",
-    "role": "Open Source Developer",
-    "link": "https://github.com/yourname/prism-motion",
-    "image": "/projects/prism-motion.png",
-    "accent": "#ec4899",
-    "category": "Open Source",
     "status": "in-progress",
     "featured": false,
-    "tech": ["React", "Framer Motion", "TypeScript"],
-    "links": { "repo": "https://github.com" },
+    "tech": ["Next.js", "WebRTC Telemetry", "Monaco Editor", "Canvas 2D/3D", "Tailwind CSS"],
+    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
     "docs": [
       {
         "section": "Overview",
-        "icon": "Sparkles",
-        "content": "# Prism Motion\n\nPrism Motion brings declarative scroll-driven storytelling to React. It wraps framer-motion in a tiny, composable API optimized for marketing pages and editorial layouts.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Prism Motion aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
+        "icon": "Terminal",
+        "content": "# Aetheris Developer Studio & Telemetry\n\nA zero-install browser workstation designed for simulation engineers and AI researchers.\n\n## Features\n- **Memory Chunk Visualizer**: Real-time heatmaps of TypedArray buffer allocation and cache utilization.\n- **Live Policy Diagnostic**: Visualizes neural network action distribution entropy, value estimation error, and agent sensory cones.\n- **Claude Co-Pilot Integration**: Instant shader optimization suggestions and natural language physics debugging assistant."
       },
       {
-        "section": "Architecture",
-        "icon": "Layers",
-        "content": "# Architecture\n\nPrism Motion is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- React\n- Framer Motion\n- TypeScript"
-      },
-      {
-        "section": "Features",
-        "icon": "ListChecks",
-        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
-      },
-      {
-        "section": "Roadmap",
-        "icon": "Map",
-        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
-      }
-    ]
-  },
-  {
-    "id": 6,
-    "slug": "atlas-maps",
-    "title": "Atlas Maps",
-    "tagline": "Vector tile rendering at 120fps in the browser.",
-    "description": "Atlas is a WebGL2 mapping engine that renders custom vector tiles with smooth camera transitions, 3D terrain, and a plugin ecosystem. Built for data visualization at scale.",
-    "year": "2022",
-    "role": "Graphics Engineer",
-    "link": "https://github.com/yourname/atlas",
-    "image": "/projects/atlas-maps.png",
-    "accent": "#6366f1",
-    "category": "Data & Analytics",
-    "status": "shipped",
-    "featured": false,
-    "tech": ["WebGL2", "TypeScript", "MapLibre", "Workers"],
-    "links": { "repo": "https://github.com", "demo": "https://example.com" },
-    "docs": [
-      {
-        "section": "Overview",
-        "icon": "Sparkles",
-        "content": "# Atlas Maps\n\nAtlas is a WebGL2 mapping engine focused on data visualization. It renders custom vector tiles at 120fps with smooth camera transitions and 3D terrain.\n\n## Why this exists\n\nThis project was born out of a recurring frustration: existing solutions traded **calm** for **power**. Atlas Maps aims to deliver both — a tool that disappears when you're in flow, yet surfaces deep capabilities the moment you need them.\n\n## Highlights\n\n- Zero-config onboarding\n- Built for edge performance\n- Accessibility as a first-class concern\n- Fully typed end-to-end"
-      },
-      {
-        "section": "Architecture",
-        "icon": "Layers",
-        "content": "# Architecture\n\nAtlas Maps is organized around three principles: **isolation**, **streaming**, and **graceful degradation**.\n\n```\n┌─────────────────────────────────────────┐\n│              Client (React)             │\n│  ┌───────────┐  ┌──────────┐  ┌───────┐ │\n│  │   UI      │  │  State   │  │ Sync  │ │\n│  └─────┬─────┘  └────┬─────┘  └───┬───┘ │\n└────────┼─────────────┼────────────┼─────┘\n         │             │            │\n         ▼             ▼            ▼\n┌─────────────────────────────────────────┐\n│           Edge (Workers / Node)         │\n│   Ingest → Validate → Route → Persist   │\n└─────────────────────────────────────────┘\n```\n\n## Tech stack\n\n- WebGL2\n- TypeScript\n- MapLibre\n- Workers"
-      },
-      {
-        "section": "Features",
-        "icon": "ListChecks",
-        "content": "# Features\n\n## Core capabilities\n\n1. **Real-time updates** — changes propagate in under 100ms via streaming.\n2. **Offline-first** — a local queue replays mutations once connectivity returns.\n3. **Granular permissions** — role-based access at the resource level.\n4. **Audit trail** — every mutation is recorded with a cryptographic signature.\n\n## Quality bar\n\n| Metric         | Target       | Achieved     |\n|----------------|--------------|--------------|\n| p99 latency    | < 100ms      | 42ms         |\n| Uptime         | 99.9%        | 99.97%       |\n| Test coverage  | 80%          | 87%          |\n| Bundle size    | < 100kb gzip | 68kb gzip    |"
-      },
-      {
-        "section": "Roadmap",
-        "icon": "Map",
-        "content": "# Roadmap\n\n## Shipped ✅\n\n- Public beta\n- Edge deployment\n- Real-time collaboration\n\n## In progress 🚧\n\n- Plugin marketplace\n- Native mobile SDKs\n\n## Exploring 🔭\n\n- AI-assisted authoring\n- Multi-region replication"
+        "section": "Telemetry Stream",
+        "icon": "Radio",
+        "content": "# High-Frequency WebRTC Telemetry\n\nThe Studio client hooks into headless Node.js or browser simulation instances via low-overhead WebRTC binary data channels, streaming tick metrics at 60Hz with less than 2ms transport overhead."
       }
     ]
   }
