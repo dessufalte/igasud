@@ -1,30 +1,34 @@
-// Prisma schema for Igasud Studio (igasud.tech) — PostgreSQL Edition
+// Prisma schema for Igasud Studio (igasud.tech) — Multi-Schema Isolated PostgreSQL
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["igasud"]
 }
 
 model SiteProfile {
-  id          String   @id @default("default")
-  name        String   @default("Igasud Studio")
-  role        String   @default("Deterministic AI Simulation & High-Throughput Game Engine Lab")
-  roleId      String   @default("Laboratorium Simulasi AI Deterministik & Engine Game Throughput Tinggi")
-  university  String   @default("Nubian · Thema · Aetheris Framework")
-  statusText  String   @default("Engine Core v2.0 · Zero-GC Deterministic Runtime Active")
-  statusTextId String  @default("Engine Core v2.0 · Runtime Deterministik Zero-GC Aktif")
-  about       String   @db.Text
-  aboutId     String   @default("") @db.Text
-  phone       String   @default("+62 812 3456 7890")
-  email       String   @default("hello@igasud.tech")
-  linkedin    String   @default("https://linkedin.com/company/igasud-studio")
-  github      String   @default("https://github.com/dessulfate")
-  forumUrl    String   @default("https://forum.igasud.tech")
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default("default")
+  name         String   @default("Igasud Studio")
+  role         String   @default("Systems Lab for Game Engines & Deterministic AI")
+  roleId       String   @default("Laboratorium Sistem untuk Engine Game & AI Deterministik")
+  university   String   @default("Nubian · Thema · Deterministic AI Architecture")
+  statusText   String   @default("Engine Core v2.0 · Deterministic Runtime Active")
+  statusTextId String   @default("Engine Core v2.0 · Runtime Deterministik Aktif")
+  about        String   @db.Text
+  aboutId      String   @default("") @db.Text
+  phone        String   @default("+62 812 3456 7890")
+  email        String   @default("hello@igasud.tech")
+  linkedin     String   @default("https://linkedin.com/company/igasud-studio")
+  github       String   @default("https://github.com/dessulfate")
+  forumUrl     String   @default("https://forum.igasud.tech")
+  updatedAt    DateTime @updatedAt
+
+  @@schema("igasud")
 }
 
 model Project {
@@ -40,29 +44,33 @@ model Project {
   category      String
   year          String   @default("2026")
   role          String   @default("Core Systems & Engine Architecture")
-  status        String   @default("shipped") // shipped | in-progress | concept
+  status        String   @default("shipped")
   featured      Boolean  @default(true)
   thumbnail     String   @default("/projects/aurora-design-system.png")
   accent        String   @default("#5c0707")
-  techStack     String   @db.Text // JSON array string
-  links         String?  @db.Text // JSON object string { repo?, demo? }
+  techStack     String   @db.Text
+  links         String?  @db.Text
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   docs          Doc[]
+
+  @@schema("igasud")
 }
 
 model Doc {
   id        String   @id @default(cuid())
   projectId String
-  section   String   // e.g. "Overview", "Architecture", "Benchmarks"
+  section   String
   icon      String   @default("FileText")
   order     Int      @default(0)
-  content   String   @db.Text // markdown
+  content   String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@schema("igasud")
 }
 
 model Message {
@@ -72,6 +80,8 @@ model Message {
   body      String   @db.Text
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@schema("igasud")
 }
 
 model Article {
@@ -86,4 +96,6 @@ model Article {
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@schema("igasud")
 }
