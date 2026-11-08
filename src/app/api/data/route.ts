@@ -243,7 +243,11 @@ export async function GET() {
       return NextResponse.json({ profile, projects, source: "postgresql" })
     } catch (dbErr) {
       console.warn("[GET /api/data] PostgreSQL fallback to local JSON:", dbErr)
-      return NextResponse.json({ ...jsonFallback, source: "json-fallback" })
+      return NextResponse.json({
+        ...jsonFallback,
+        source: "json-fallback",
+        dbError: String(dbErr),
+      })
     }
   } catch (error) {
     console.error("[GET /api/data]", error)
