@@ -1,57 +1,38 @@
 import { db } from "@/lib/db"
 
 export const dynamic = "force-dynamic"
-export const revalidate = 3600 // 1 hour
+export const revalidate = 3600
 
-function escapeXml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;")
+interface SitemapEntry {
+  loc: string
+  priority: string
+  changefreq: string
+  lastmod?: Date | string
 }
 
 export async function GET() {
   try {
-    const siteUrl = "https://studio.example"
+    const siteUrl = "https://igasud.tech"
     const now = new Date()
 
-    // Static pages (single-page app sections)
-    const staticUrls = [
+    const staticUrls: SitemapEntry[] = [
       { loc: "/", priority: "1.0", changefreq: "weekly" },
-      { loc: "/#work", priority: "0.9", changefreq: "weekly" },
-      { loc: "/#about", priority: "0.7", changefreq: "monthly" },
-      { loc: "/#skills", priority: "0.7", changefreq: "monthly" },
-      { loc: "/#writing", priority: "0.9", changefreq: "weekly" },
-      { loc: "/#contact", priority: "0.6", changefreq: "monthly" },
+      { loc: "/#architecture", priority: "0.9", changefreq: "weekly" },
+      { loc: "/#vision", priority: "0.8", changefreq: "monthly" },
+      { loc: "/#contact", priority: "0.7", changefreq: "monthly" },
     ]
 
-    // Project doc deep-links
     const projects = await db.project.findMany({
       select: { slug: true, updatedAt: true },
     })
-    const projectUrls = projects.map((p) => ({
+    const projectUrls: SitemapEntry[] = projects.map((p) => ({
       loc: `/#/project/${p.slug}`,
       priority: "0.8",
       changefreq: "monthly",
       lastmod: p.updatedAt,
     }))
 
-    // Article deep-links
-    const articles = await db.article.findMany({
-      where: { published: true },
-      select: { slug: true, publishedAt: true },
-      orderBy: { publishedAt: "desc" },
-    })
-    const articleUrls = articles.map((a) => ({
-      loc: `/#/article/${a.slug}`,
-      priority: "0.8",
-      changefreq: "monthly",
-      lastmod: a.publishedAt,
-    }))
-
-    const allUrls = [...staticUrls, ...projectUrls, ...articleUrls]
+    const allUrls: SitemapEntry[] = [...staticUrls, ...projectUrls]
 
     const urls = allUrls
       .map((u) => {

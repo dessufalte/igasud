@@ -1,41 +1,64 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for Igasud Studio (igasud.tech) — PostgreSQL Edition
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Project {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  tagline     String
-  description String
-  category    String
-  year        Int
-  status      String   @default("shipped") // shipped | in-progress | concept
-  featured    Boolean  @default(false)
-  thumbnail   String?
-  accent      String   @default("#8b5cf6") // accent color for the card
-  techStack   String   // JSON array string
-  links       String?  // JSON object string { repo?, demo?, docs? }
-  createdAt   DateTime @default(now())
+model SiteProfile {
+  id          String   @id @default("default")
+  name        String   @default("Igasud Studio")
+  role        String   @default("Deterministic AI Simulation & High-Throughput Game Engine Lab")
+  roleId      String   @default("Laboratorium Simulasi AI Deterministik & Engine Game Throughput Tinggi")
+  university  String   @default("Nubian · Thema · Aetheris Framework")
+  statusText  String   @default("Engine Core v2.0 · Zero-GC Deterministic Runtime Active")
+  statusTextId String  @default("Engine Core v2.0 · Runtime Deterministik Zero-GC Aktif")
+  about       String   @db.Text
+  aboutId     String   @default("") @db.Text
+  phone       String   @default("+62 812 3456 7890")
+  email       String   @default("hello@igasud.tech")
+  linkedin    String   @default("https://linkedin.com/company/igasud-studio")
+  github      String   @default("https://github.com/dessulfate")
+  forumUrl    String   @default("https://forum.igasud.tech")
   updatedAt   DateTime @updatedAt
-  docs        Doc[]
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  numId         Int      @default(1)
+  slug          String   @unique
+  title         String
+  titleId       String   @default("")
+  tagline       String
+  taglineId     String   @default("")
+  description   String   @db.Text
+  descriptionId String   @default("") @db.Text
+  category      String
+  year          String   @default("2026")
+  role          String   @default("Core Systems & Engine Architecture")
+  status        String   @default("shipped") // shipped | in-progress | concept
+  featured      Boolean  @default(true)
+  thumbnail     String   @default("/projects/aurora-design-system.png")
+  accent        String   @default("#5c0707")
+  techStack     String   @db.Text // JSON array string
+  links         String?  @db.Text // JSON object string { repo?, demo? }
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  docs          Doc[]
 }
 
 model Doc {
   id        String   @id @default(cuid())
   projectId String
-  section   String   // e.g. "Overview", "Architecture", "Features"
+  section   String   // e.g. "Overview", "Architecture", "Benchmarks"
   icon      String   @default("FileText")
   order     Int      @default(0)
-  content   String   // markdown
+  content   String   @db.Text // markdown
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -46,7 +69,7 @@ model Message {
   id        String   @id @default(cuid())
   name      String
   email     String
-  body      String
+  body      String   @db.Text
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
@@ -56,8 +79,8 @@ model Article {
   slug        String   @unique
   title       String
   excerpt     String
-  body        String   // markdown
-  tag         String   @default("Writing") // Writing | Essay | Note | Talk
+  body        String   @db.Text
+  tag         String   @default("Writing")
   readingMins Int      @default(3)
   published   Boolean  @default(true)
   publishedAt DateTime @default(now())

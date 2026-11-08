@@ -1,142 +1,116 @@
 [
   {
     "id": 1,
-    "slug": "aetheris-core-engine",
-    "title": "Aetheris Core Engine",
-    "tagline": "Deterministic browser game simulation engine powered by Component-Material Data Abstractions.",
-    "description": "Aetheris is an experimental high-performance JavaScript/WebAssembly physics-material simulation engine. Built with Data-Oriented Design (DOD), contiguous TypedArray buffers, and zero-GC memory pooling, it runs 100k+ active material particles at 60 FPS directly in the browser runtime.",
+    "slug": "nubian-simulation-engine",
+    "title": "Nubian Core",
+    "titleId": "Nubian Core",
+    "tagline": "Macro socio-economic & strategy world engine built on strict Data-Oriented Design.",
+    "taglineId": "Engine simulasi dunia sosio-ekonomi makro & strategi berbasis Data-Oriented Design murni.",
+    "description": "Nubian is an active native C++ simulation engine built with strict Data-Oriented Design (DOD). By pre-allocating the entire world state at startup—covering 10,000+ population cohorts (Pops), 2,000+ buildings, trade networks, dynasties, and cultural traits—it computes full world ticks in roughly 1 ms with zero runtime heap fragmentation.",
+    "descriptionId": "Nubian adalah engine simulasi C++ native aktif yang dirancang dengan Data-Oriented Design (DOD) ketat. Dengan melakukan pra-alokasi seluruh memori dunia saat startup—mencakup 10.000+ kohor populasi (Pops), 2.000+ bangunan, jaringan dagang, dinasti, dan sifat budaya—engine ini menjalankan kalkulasi dunia dalam ~1 ms tanpa fragmentasi memori runtime.",
     "year": "2026",
-    "role": "Engine Architecture & Core Systems",
+    "role": "Engine Architecture (C++ / DOD)",
     "link": "https://igasud.tech",
     "image": "/projects/aurora-design-system.png",
-    "accent": "#8b5cf6",
-    "category": "Simulation Engine",
+    "accent": "#5c0707",
+    "category": "Strategy & Economic Simulation (C++)",
     "status": "in-progress",
     "featured": true,
-    "tech": ["JavaScript", "WebGPU", "WebAssembly", "Data-Oriented ECS", "SharedArrayBuffer"],
-    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
+    "tech": ["C++20", "Data-Oriented Design", "Zero Runtime Allocation", "SoA Memory Layout", "Deterministic Logic"],
+    "links": {
+      "repo": "https://github.com/dessulfate",
+      "demo": ""
+    },
     "docs": [
       {
         "section": "Overview",
         "icon": "Sparkles",
-        "content": "# Aetheris Core Engine\n\nAetheris is a next-generation, web-native simulation engine engineered to eliminate the architectural bottlenecks of conventional JavaScript game engines.\n\n## The Problem with Traditional Web Engines\nMost JavaScript engines rely on object-oriented hierarchies (`class Entity`, `class Mesh`). In complex simulations with tens of thousands of dynamic bodies, this causes:\n- **Severe Cache Invalidation**: Pointers are scattered across V8 heap space.\n- **Garbage Collection (GC) Stutters**: Frequent object instantiations trigger unpredictable GC pauses, breaking frame pacing.\n- **Non-Deterministic Physics**: Floating point inconsistencies across client runtimes make synchronized multi-agent simulations impossible.\n\n## The Aetheris Solution\nAetheris redesigns the browser game pipeline from first principles through **Data-Oriented Design (DOD)** and **Component-Material Data Abstractions (CMDA)**, executing contiguous numerical buffers over WebGPU compute passes and WebAssembly kernels."
+        "content": "# Nubian Simulation Engine\n\n**Nubian** is a high-throughput C++ engine designed for strategy games, detailed RPG world states, and demographic-economic models.\n\n## The Memory Bottleneck in Conventional Game Engines\nTraditional object-oriented game engines instantiate thousands of heap-allocated objects (`Pop*`, `Settlement*`, `TradeRoute*`). As game time advances:\n- **Pointer Chasing & Cache Misses**: Scattered object references in heap memory cause CPU pipelines to stall.\n- **Late-Game Stutter**: Frequent dynamic allocations during periodic ticks degrade frame pacing.\n\n## Zero Runtime Allocation\nNubian avoids `new`/`malloc` calls during the main simulation loop. Memory for all active entities is allocated upfront in flat, contiguous arrays, keeping tick execution steady from start to finish."
       },
       {
-        "section": "Architecture",
+        "section": "Memory Layout",
         "icon": "Layers",
-        "content": "# Core Engine Architecture\n\nAetheris decouples logic from data storage, structuring all simulation entities into contiguous memory blocks.\n\n```\n┌─────────────────────────────────────────────────────────────┐\n│                     AETHERIS MEMORY ARENA                   │\n│ ┌───────────────────────┐         ┌───────────────────────┐ │\n│ │ Entity Index Table    │         │ Material Tensor Pool  │ │\n│ │ [Uint32: ID, Flags]   │         │ [Float32: M-Matrices] │ │\n│ └──────────┬────────────┘         └───────────┬───────────┘ │\n│            │                                  │             │\n│            ▼                                  ▼             │\n│ ┌─────────────────────────────────────────────────────────┐ │\n│ │ Structure-of-Arrays (SoA) Transform & Kinematics Stream │ │\n│ │ PosX[] | PosY[] | VelX[] | VelY[] | Mass[] | Stress[]   │ │\n│ └─────────────────────────────────────────────────────────┘ │\n└──────────────────────────────┬──────────────────────────────┘\n                               ▼\n┌─────────────────────────────────────────────────────────────┐\n│ WebGPU Compute Shader / WASM Deterministic Tick (60/120 Hz) │\n└─────────────────────────────────────────────────────────────┘\n```\n\n## Architectural Guarantees\n1. **Zero-Allocation Game Loop**: Memory buffers are pre-allocated during engine initialization in `SharedArrayBuffer` arenas.\n2. **Fixed-Step Determinism**: State evolution proceeds in strict discrete steps ($dt = 1/60s$), enabling frame-exact replays and multi-agent training reproducibility."
-      },
-      {
-        "section": "Material Abstraction",
-        "icon": "Box",
-        "content": "# Component-Material Data Abstractions (CMDA)\n\nIn Aetheris, an entity does not merely possess a collision mask. It is bound to a physical-chemical **Material Tensor** describing how it interacts with heat, shear stress, and momentum.\n\n## Tensor Mathematical Formulation\nEach material type is encoded as a compact 32-byte numerical vector:\n\n$$M = \\begin{bmatrix} \\rho & \\text{Density } (kg/m^3) \\\\ \\mu & \\text{Friction Coefficient} \\\\ \\kappa & \\text{Thermal Conductivity } (W/m\\cdot K) \\\\ \\sigma_y & \\text{Tensile Yield Stress } (MPa) \\\\ \\epsilon & \\text{Restitution / Elastic Modulus} \\end{bmatrix}$$\n\n## Dynamic Phase Transition\nWhen stress or thermal thresholds exceed $\\sigma_y$, systems trigger continuous state transformations (e.g., solid brittle fracturing $\\rightarrow$ granular aggregate $\\rightarrow$ viscous fluid) using unified particle-based equations."
+        "content": "# Pre-Allocated World Memory Arena\n\nAt startup (`sim.init()`), Nubian sets aside fixed, contiguous memory buffers for the entire simulated world:\n\n```cpp\n// Pre-allocating world entities to avoid runtime allocations\nsim.init(\n    50,     // Max Settlements\n    200,    // Max Trade & Logistics Edges\n    10,     // Max Cultural Groups\n    10,     // Max Religions & Beliefs\n    30,     // Max Technologies\n    30,     // Max Trade Materials\n    20,     // Max Population Roles\n    2000,   // Max Building Instances\n    10000,  // Max Population Cohorts (Pops)\n    50,     // Max Active Trade Routes\n    20      // Max Ruling Dynasties\n);\n```\n\n## Structured Data Pipeline\nGame definitions, cultural tenets, and civic rules are parsed from JSON files directly into flat, index-linked tables for quick traversal."
       },
       {
         "section": "Benchmarks",
         "icon": "Cpu",
-        "content": "# Performance & Benchmark Telemetry\n\nBenchmarks evaluated on standard consumer hardware (Apple M-Series / RTX 3060) within Google Chrome and Safari WebGPU runtimes:\n\n| Simulation Metric | Standard JS Engine (Three/Babylon) | Aetheris Core Engine | Improvement |\n| :--- | :--- | :--- | :--- |\n| Active Dynamic Particles | ~8,500 particles | **110,000+ particles** | **12.9x throughput** |\n| Physics Tick Latency | 14.8 ms | **1.18 ms** | **92% reduction** |\n| GC Pause Time / Minute | 120 - 350 ms | **0.00 ms (Zero GC)** | **100% elimination** |\n| Memory Footprint (10k bodies) | 185 MB | **14.2 MB** | **92.3% smaller** |\n\nAll metrics are validated using the Chrome DevTools Memory Profiler and Performance Timeline."
+        "content": "# Measured Execution Times\n\nTested on a standard desktop CPU (single thread, SIMD-aligned arrays):\n\n| Subsystem | Active Entities | Execution Time | Heap Allocations |\n| :--- | :--- | :--- | :--- |\n| Population Growth & Migration | 10,000 Pops | **0.42 ms** | **0 bytes** |\n| Trade Flow Calculations | 200 Edges / 50 Routes | **0.19 ms** | **0 bytes** |\n| Production & Building Ledger | 2,000 Buildings | **0.31 ms** | **0 bytes** |\n| Dynasty & Faction Logic | 20 Dynasties / 10 Blocs | **0.11 ms** | **0 bytes** |\n| **Full World Monthly Tick** | **All Subsystems** | **1.03 ms** | **0 bytes** |"
       }
     ]
   },
   {
     "id": 2,
-    "slug": "neuralkinematics-rl",
-    "title": "NeuralKinematics Agent Framework",
-    "tagline": "Dual-loop reinforcement learning and Claude neuro-symbolic cognitive orchestration.",
-    "description": "A multi-agent reinforcement learning framework embedded within the Aetheris runtime. Fast local PPO/SAC policies execute motor control and locomotion on WebGPU/WASM, while Anthropic Claude models serve as asynchronous Cognitive Orchestrators for dynamic reward shaping and goal synthesis.",
+    "slug": "thema-entity-simulation-system",
+    "title": "Thema Entity Simulation System",
+    "titleId": "Sistem Simulasi Entitas Thema",
+    "tagline": "C++ entity runtime and modular registry system for populations, buildings, markets, and regional biomes.",
+    "taglineId": "Runtime entitas C++ dan sistem registry modular untuk populasi, bangunan, pasar, dan bioma regional.",
+    "description": "Thema is an ongoing C++ entity simulation and runtime architecture. It models the living lifecycle of settlements, dynamic population strata, building productions, and commodity markets. Utilizing pre-compiled binary caches and typed integer handles, it evaluates multi-variable climate and production modifiers with O(1) array traversal.",
+    "descriptionId": "Thema adalah arsitektur runtime dan simulasi entitas C++ yang sedang aktif dikembangkan. Sistem ini memodelkan siklus hidup pemukiman, strata populasi dinamis, produksi bangunan, dan pasar komoditas. Memanfaatkan cache biner terkompilasi dan handle integer bertipe, sistem ini mengevaluasi modifier iklim dan produksi multi-variabel melalui penelusuran array O(1).",
     "year": "2026",
-    "role": "AI Architecture & RL Engineering",
+    "role": "Entity Systems & Runtime Engineering",
     "link": "https://igasud.tech",
-    "image": "/projects/lumen-analytics.png",
-    "accent": "#06b6d4",
-    "category": "Autonomous AI & RL",
+    "image": "/projects/prism-motion.png",
+    "accent": "#801010",
+    "category": "Entity Simulation & Runtime (C++)",
     "status": "in-progress",
     "featured": true,
-    "tech": ["Reinforcement Learning", "Anthropic Claude 3.5", "ONNX Runtime Web", "PPO / SAC", "WASM"],
-    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
+    "tech": ["C++", "Entity Runtime", "Binary Registry", "Production Systems", "Market Equations"],
+    "links": {
+      "repo": "https://github.com/dessulfate",
+      "demo": ""
+    },
     "docs": [
       {
         "section": "Overview",
-        "icon": "Sparkles",
-        "content": "# NeuralKinematics Agent Framework\n\nNeuralKinematics introduces a **Dual-Loop Neuro-Symbolic** framework designed for autonomous simulation agents operating inside physical environments.\n\n## The Core RL Challenge\nTraditional Reinforcement Learning (RL) excels at fine-grained motor control (such as maintaining balance or applying joint torques), but suffers in complex emergent games:\n1. **Sparse Reward Dilemma**: Agents struggle to learn long-horizon strategies without hand-crafted heuristics.\n2. **Brittle Generalization**: Policies trained on one friction coefficient fail when the material properties change.\n3. **Lack of Semantic Reasoning**: Pure neural policies cannot reason about high-level intentions or social coordination.\n\n## The Solution: Hierarchical Dual-Loop Coupling\nWe decouple **physical reaction** from **cognitive strategy**:\n- **Micro-Loop (120 Hz)**: On-device WASM/WebGPU policy neural network executing joint forces.\n- **Macro-Loop (Asynchronous)**: Anthropic Claude 3.5 Sonnet analyzing global simulation state tensors, adapting rewards, and directing high-level agent intentions."
+        "icon": "FileText",
+        "content": "# Thema Entity Simulation & Runtime\n\nIn living game worlds, entities like populations, workshops, markets, and regional provinces interact constantly throughout the game loop.\n\n**Thema** decouples static definitions (materials, traits, climates) from live entity runtimes (`pop_runtime`, `building_runtime`, `market_runtime`), ensuring clear separation between data rules and simulation ticks."
       },
       {
-        "section": "Micro-Loop Policy",
-        "icon": "Zap",
-        "content": "# Micro-Loop: Local Policy Execution\n\nThe local policy runs with sub-millisecond execution times within the browser thread via WebAssembly and ONNX Runtime Web.\n\n## State & Observation Space\nAt every physics tick $t$, the agent receives a vectorized observation vector $S_t$:\n- **Proprioceptive State**: Joint angles, angular velocities, linear momentum, and ground normal contacts.\n- **Exteroceptive Sensory Array**: 32-ray local distance and material impedance sensor readings sampled from the Component-Material buffer.\n\n$$\\text{Action Space } A_t = [\\tau_1, \\tau_2, \\dots, \\tau_k] \\quad (\\tau_i \\in [-1.0, 1.0] \\text{ Normalized Motor Torques})$$\n\nInference executes in **0.12ms** per agent, allowing hundreds of active RL agents in a single browser tab."
+        "section": "Entity Architecture",
+        "icon": "Layers",
+        "content": "# Modular Entity Runtime Architecture\n\nThema organizes simulation components into dedicated subsystems:\n\n1. **Pop & Production Runtime**: Evaluates workforce assignment, consumption needs, and goods output per building cycle.\n2. **Market & Exchange System**: Calculates supply-demand price shifts across local market nodes without string allocations.\n3. **Climate & Biome Registry**: Modifies resource yields based on regional parameters using integer handle lookups (`uint16_t`)."
       },
       {
-        "section": "Claude Integration",
-        "icon": "Brain",
-        "content": "# Macro-Loop: Anthropic Claude Cognitive Core\n\nAnthropic Claude is integrated directly into the training loop and runtime narrative engine.\n\n```\n┌────────────────────────────────────────────────────────┐\n│       LOCAL SIMULATION ENVIRONMENT (Aetheris WASM)     │\n│  Active Micro-Policies -> Continuous State Sampling    │\n└───────────────────────────┬────────────────────────────┘\n                            │ (Periodic State Snapshots)\n                            ▼\n┌────────────────────────────────────────────────────────┐\n│            ANTHROPIC CLAUDE 3.5 COGNITIVE BUS          │\n│  1. Goal Formulation: Translates context into intent   │\n│  2. Dynamic Reward Shaping: Synthesizes reward weights │\n│  3. Anomaly & Curricula Synthesis: Injects edge cases  │\n└───────────────────────────┬────────────────────────────┘\n                            │ (Updated Reward Shapers)\n                            ▼\n┌────────────────────────────────────────────────────────┐\n│             POLICY OPTIMIZER (PPO Loss Loop)           │\n│  Adaptive loss gradient guided by Claude rewards       │\n└────────────────────────────────────────────────────────┘\n```\n\n## Key Claude Capabilities\n- **Reward Function Synthesis**: Claude generates adaptive reward functions based on simulation progress: if agents fail on high-friction gravel, Claude adapts reward coefficients to encourage step-height clearance.\n- **Natural Language Environment Compilation**: Developers describe test scenarios in plain English, and Claude compiles them directly into initial Aetheris component buffers."
-      },
-      {
-        "section": "Training Telemetry",
-        "icon": "Activity",
-        "content": "# Training Telemetry & Generalization\n\nTraining performance comparing baseline PPO vs Claude-Guided Hierarchical PPO:\n\n- **Sample Efficiency**: Reached 80% locomotion mastery in **3.4x fewer environmental frames**.\n- **Cross-Material Zero-Shot Adaptation**: Successfully traversed low-friction ice ($u = 0.05$) and high-viscosity mud ($u = 0.85$) without retraining, guided by real-time sensory material classification.\n- **Token Optimization**: Prompt caching and structured JSON outputs keep Claude API latency minimal while preserving deep strategic context."
+        "section": "Formulas",
+        "icon": "Code2",
+        "content": "# Regional Production Modifier Equations\n\nEntity yields evaluate through flat multiplicative pipelines:\n\n$$\\text{Yield}_{r,m} = \\text{BaseOutput}_{m} \\times \\prod_{k \\in \\text{Climate}(r)} (1 + \\alpha_k) \\times \\prod_{j \\in \\text{Biome}(r)} (1 + \\beta_j)$$\n\n- **O(1) Handle Indexing**: Resolves entity types directly to contiguous array offsets.\n- **Zero String Overhead**: All runtime lookups operate strictly over numerical identifiers."
       }
     ]
   },
   {
     "id": 3,
-    "slug": "project-substratum",
-    "title": "Project Substratum: Material Ecosystem",
-    "tagline": "Emergent macroscopic terrain erosion and fluid-solid material interaction simulation.",
-    "description": "Interactive sandbox simulation demonstrating large-scale hydraulic erosion, granular flow, and thermal dissipation. Entities dynamically alter terrain based on physical material tensors rather than canned scripted triggers.",
-    "year": "2025",
-    "role": "Physics Simulation & Graphics",
+    "slug": "deterministic-ai-engineering",
+    "title": "Deterministic AI Engineering",
+    "titleId": "Rekayasa AI Deterministik",
+    "tagline": "Reproducible decision architecture and multi-agent utility systems for game NPCs and strategic actors.",
+    "taglineId": "Arsitektur keputusan yang dapat direproduksi dan sistem utilitas multi-agen untuk NPC game dan aktor strategis.",
+    "description": "An active engineering framework focused on deterministic AI for games and simulations. It provides frame-exact reproducible decision policies, utility scoring, and hierarchical goal management. By ensuring identical state transitions for given inputs, it enables verifiable simulations, desync-free multiplayer lockstep, and predictable tactical NPC behaviors.",
+    "descriptionId": "Kerangka kerja rekayasa aktif yang berfokus pada AI deterministik untuk game dan simulasi. Sistem ini menyediakan policy keputusan yang dapat direproduksi persis per-frame, penilaian utilitas, dan manajemen tujuan hierarkis. Dengan memastikan transisi status yang identik pada input tertentu, sistem ini memungkinkan simulasi yang dapat diverifikasi, sinkronisasi lockstep bebas desync, dan perilaku taktis NPC yang terprediksi.",
+    "year": "2026",
+    "role": "AI Systems & Decision Architecture",
     "link": "https://igasud.tech",
-    "image": "/projects/prism-motion.png",
-    "accent": "#10b981",
-    "category": "Physics Simulation",
-    "status": "shipped",
+    "image": "/projects/lumen-analytics.png",
+    "accent": "#B22F32",
+    "category": "Deterministic AI & Agent Systems",
+    "status": "in-progress",
     "featured": true,
-    "tech": ["WebGPU Compute", "Fluid Dynamics", "SPH Particles", "Material Tensors", "TypeScript"],
-    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
+    "tech": ["Deterministic Logic", "Utility AI", "Fixed-Point Math", "Behavior Systems", "C++ / Systems"],
+    "links": {
+      "repo": "https://github.com/dessulfate",
+      "demo": ""
+    },
     "docs": [
       {
         "section": "Overview",
         "icon": "Sparkles",
-        "content": "# Project Substratum\n\nProject Substratum is a large-scale environmental simulation testbed demonstrating the power of continuous Component-Material interactions.\n\n## Simulation Scope\nRather than pre-baking terrain heightmaps or script-triggered destruction animations, Substratum simulates:\n- **Fluid Mechanics**: Real-time river carving, sediment transport, and evaporation.\n- **Granular Avalanches**: Angle of repose collapses for sand, gravel, and snow based on granular mechanics.\n- **Thermal Dissipation**: Heat transfer through conductive geological strata."
+        "content": "# Deterministic AI Engineering\n\nIn complex strategy games and simulation-heavy RPGs, non-deterministic AI decisions can cause multiplayer desynchronization, unreproducible bugs, and erratic behavior.\n\nThis framework implements **Deterministic Decision Pipelines**, ensuring that given a world snapshot $S_t$, agent evaluations produce identical results across runs and target machines."
       },
       {
-        "section": "Physics Formulation",
-        "icon": "Flame",
-        "content": "# Physics Formulation: SPH & Granular Mechanics\n\nSubstratum executes a dual-phase simulation using Smoothed-Particle Hydrodynamics (SPH) coupled to continuous granular continuum mechanics:\n\n$$\\rho_i = \\sum_j m_j W(\\mathbf{r}_i - \\mathbf{r}_j, h)$$\n\n$$\\frac{d\\mathbf{v}_i}{dt} = - \\sum_j m_j \\left( \\frac{P_i}{\\rho_i^2} + \\frac{P_j}{\\rho_j^2} \\right) \\nabla W(\\mathbf{r}_i - \\mathbf{r}_j, h) + \\mathbf{g}$$\n\nAll pressure gradient solvers and viscosity dampers execute in parallel WebGPU workgroups."
-      },
-      {
-        "section": "Scenario Generation",
-        "icon": "Sliders",
-        "content": "# Procedural Scenario Synthesis\n\nBy leveraging Claude API's structured output generation, researchers and level designers can synthesize geologically coherent scenarios instantly:\n- Prompt: *\"Generate a volcanic caldron with basalt foundations undergoing torrential rainfall and flash mudslides.\"*\n- Output: A verified JSON payload containing tensor seeds, hydraulic flow emitters, and thermal boundary conditions loaded directly into the WebGPU buffer."
-      }
-    ]
-  },
-  {
-    "id": 4,
-    "slug": "aetheris-studio-sdk",
-    "title": "Aetheris Developer Studio & Telemetry",
-    "tagline": "Browser-based telemetry workbench, material tensor inspector, and live RL visualizer.",
-    "description": "Web-first IDE and telemetry suite for real-time memory arena profiling, tensor inspection, and live RL agent reward curve debugging with Claude-powered architectural diagnostics.",
-    "year": "2026",
-    "role": "Developer Tooling & Platform",
-    "link": "https://igasud.tech",
-    "image": "/projects/driftwood-cli.png",
-    "accent": "#f59e0b",
-    "category": "Developer Tools",
-    "status": "in-progress",
-    "featured": false,
-    "tech": ["Next.js", "WebRTC Telemetry", "Monaco Editor", "Canvas 2D/3D", "Tailwind CSS"],
-    "links": { "repo": "https://github.com/dessulfate", "demo": "https://igasud.tech" },
-    "docs": [
-      {
-        "section": "Overview",
-        "icon": "Terminal",
-        "content": "# Aetheris Developer Studio & Telemetry\n\nA zero-install browser workstation designed for simulation engineers and AI researchers.\n\n## Features\n- **Memory Chunk Visualizer**: Real-time heatmaps of TypedArray buffer allocation and cache utilization.\n- **Live Policy Diagnostic**: Visualizes neural network action distribution entropy, value estimation error, and agent sensory cones.\n- **Claude Co-Pilot Integration**: Instant shader optimization suggestions and natural language physics debugging assistant."
-      },
-      {
-        "section": "Telemetry Stream",
-        "icon": "Radio",
-        "content": "# High-Frequency WebRTC Telemetry\n\nThe Studio client hooks into headless Node.js or browser simulation instances via low-overhead WebRTC binary data channels, streaming tick metrics at 60Hz with less than 2ms transport overhead."
+        "section": "Decision Architecture",
+        "icon": "Cpu",
+        "content": "# Hierarchical Utility & Goal Selection\n\nAgents evaluate decisions through structured priority layers:\n\n1. **Tactical Reaction (Local Tick)**: Evaluates immediate environmental threats, stamina thresholds, and proximity targets using deterministic integer math.\n2. **Strategic Utility Scoring**: Weights competing long-term goals (e.g., resource stockpiling vs. defense posture) based on clear mathematical curves.\n3. **Replay Verifiability**: Enables full match and simulation replays from minimal input logs."
       }
     ]
   }

@@ -294,20 +294,21 @@ export function ProjectDocDrawer({
             {project.tagline}
           </SheetDescription>
           {/* Quick links */}
-          <div className="flex items-center gap-2 pt-1">
-            {project.links?.repo && (
+          <div className="flex items-center gap-2 pt-1 flex-wrap">
+            {project.links?.repo ? (
               <a href={project.links.repo} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-foreground/5 hover:bg-foreground/10 transition-colors">
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#efe7ce] border border-[#bfb69e] hover:border-[#5c0707] text-[#5c0707] text-xs font-bold transition-colors">
                 <Github className="h-3.5 w-3.5" />Repository
               </a>
-            )}
-            {project.links?.demo && (
-              <a href={project.links.demo} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white shadow-sm"
-                style={{ background: `linear-gradient(135deg, ${project.accent}, ${project.accent}dd)` }}>
-                <ExternalLink className="h-3.5 w-3.5" />Live demo
-              </a>
-            )}
+            ) : null}
+            {/* Live Demo Status: Disabled / Belum Tersedia */}
+            <span
+              title="Live interactive demo is currently in local development and not yet publicly hosted."
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#efe7ce] border border-[#bfb69e] text-[#655f53] text-xs font-mono select-none cursor-not-allowed opacity-80"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-[#655f53]" />
+              Live Demo: Belum Tersedia (Standalone Native Build)
+            </span>
           </div>
         </SheetHeader>
 

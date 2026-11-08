@@ -1,14 +1,21 @@
+export type Language = "en" | "id"
+
 export interface Profile {
   name: string
   role: string
+  roleId?: string
   university: string
+  statusText?: string
+  statusTextId?: string
   contact: {
     phone: string
     email: string
     linkedin: string
     github: string
+    forumUrl?: string
   }
   about: string
+  aboutId?: string
   photos: string[]
 }
 
@@ -19,11 +26,14 @@ export interface ProjectDoc {
 }
 
 export interface Project {
-  id: number
+  id: number | string
   slug: string
   title: string
+  titleId?: string
   tagline: string
+  taglineId?: string
   description: string
+  descriptionId?: string
   year: string
   role: string
   link: string
@@ -40,4 +50,5 @@ export interface Project {
 export interface PortfolioData {
   profile: Profile
   projects: Project[]
+  source?: "postgresql" | "json-fallback"
 }

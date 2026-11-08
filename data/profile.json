@@ -1,13 +1,18 @@
 {
   "name": "Igasud Studio",
-  "role": "Deterministic Simulation Engine & Autonomous AI Lab",
-  "university": "Aetheris Simulation Framework",
+  "role": "Systems Lab for Game Engines & Deterministic AI",
+  "roleId": "Laboratorium Sistem untuk Engine Game & AI Deterministik",
+  "university": "Nubian · Thema · Deterministic AI Architecture",
+  "statusText": "Engine Core v2.0 · Deterministic Runtime Active",
+  "statusTextId": "Engine Core v2.0 · Runtime Deterministik Aktif",
   "contact": {
     "phone": "+62 812 3456 7890",
     "email": "hello@igasud.tech",
     "linkedin": "https://linkedin.com/company/igasud-studio",
-    "github": "https://github.com/dessufalte"
+    "github": "https://github.com/dessulfate",
+    "forumUrl": "https://forum.igasud.tech"
   },
-  "about": "Igasud Studio is an independent deep-tech simulation laboratory engineering high-throughput, web-native game simulation engines. We pioneer Component-Material Data Abstractions (CMDA) decoupled from traditional OOP constraints, bridging deterministic local reinforcement learning with Anthropic Claude's cognitive orchestration for emergent multi-agent ecosystems directly in the browser.",
+  "about": "Igasud Studio is an independent systems laboratory engineering game simulation engines and deterministic AI. We build cache-friendly C++ architectures (Nubian & Thema), zero-allocation memory pools, and reproducible decision systems for deep RPGs and strategy simulations.",
+  "aboutId": "Igasud Studio adalah laboratorium sistem independen yang merekayasa engine simulasi game dan AI deterministik. Kami membangun arsitektur C++ ramah cache (Nubian & Thema), pool memori tanpa alokasi dinamis, dan sistem keputusan yang dapat direproduksi untuk RPG mendalam dan simulasi strategi.",
   "photos": []
 }
